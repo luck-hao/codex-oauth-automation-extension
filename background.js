@@ -9,6 +9,7 @@ importScripts(
   'gopay-utils.js',
   'phone-sms/providers/hero-sms.js',
   'phone-sms/providers/five-sim.js',
+  'phone-sms/providers/smsbower.js',
   'phone-sms/providers/registry.js',
   'background/phone-verification-flow.js',
   'background/account-run-history.js',
@@ -475,11 +476,13 @@ const PHONE_SMS_PROVIDER_5SIM = '5sim';
 const PHONE_SMS_PROVIDER_HERO_SMS = PHONE_SMS_PROVIDER_HERO;
 const PHONE_SMS_PROVIDER_FIVE_SIM = PHONE_SMS_PROVIDER_5SIM;
 const PHONE_SMS_PROVIDER_NEXSMS = 'nexsms';
+const PHONE_SMS_PROVIDER_SMSBOWER = 'smsbower';
 const DEFAULT_PHONE_SMS_PROVIDER = PHONE_SMS_PROVIDER_HERO;
 const DEFAULT_PHONE_SMS_PROVIDER_ORDER = Object.freeze([
   PHONE_SMS_PROVIDER_HERO,
   PHONE_SMS_PROVIDER_5SIM,
   PHONE_SMS_PROVIDER_NEXSMS,
+  PHONE_SMS_PROVIDER_SMSBOWER,
 ]);
 const DEFAULT_FIVE_SIM_BASE_URL = 'https://5sim.net/v1';
 const DEFAULT_FIVE_SIM_PRODUCT = 'openai';
@@ -488,6 +491,9 @@ const DEFAULT_FIVE_SIM_COUNTRY_ORDER = Object.freeze(['thailand']);
 const DEFAULT_NEX_SMS_BASE_URL = 'https://api.nexsms.net';
 const DEFAULT_NEX_SMS_SERVICE_CODE = 'ot';
 const DEFAULT_NEX_SMS_COUNTRY_ORDER = Object.freeze([1]);
+const DEFAULT_SMSBOWER_BASE_URL = 'https://smsbower.page/stubs/handler_api.php';
+const DEFAULT_SMSBOWER_SERVICE_CODE = 'dr';
+const DEFAULT_SMSBOWER_COUNTRY_ORDER = Object.freeze([6]);
 const DEFAULT_HERO_SMS_REUSE_ENABLED = true;
 const HERO_SMS_ACQUIRE_PRIORITY_COUNTRY = 'country';
 const HERO_SMS_ACQUIRE_PRIORITY_PRICE = 'price';
@@ -889,6 +895,11 @@ const PERSISTED_SETTING_DEFAULTS = {
   nexSmsApiKey: '',
   nexSmsCountryOrder: [...DEFAULT_NEX_SMS_COUNTRY_ORDER],
   nexSmsServiceCode: DEFAULT_NEX_SMS_SERVICE_CODE,
+  smsbowerApiKey: '',
+  smsbowerBaseUrl: DEFAULT_SMSBOWER_BASE_URL,
+  smsbowerCountryOrder: [...DEFAULT_SMSBOWER_COUNTRY_ORDER],
+  smsbowerServiceCode: DEFAULT_SMSBOWER_SERVICE_CODE,
+  smsbowerMaxPrice: '',
   phonePreferredActivation: null,
 };
 
@@ -1324,8 +1335,8 @@ function normalizePhoneSmsProvider(value = '') {
   if (normalized === PHONE_SMS_PROVIDER_FIVE_SIM) {
     return PHONE_SMS_PROVIDER_FIVE_SIM;
   }
-  if (normalized === PHONE_SMS_PROVIDER_NEXSMS) {
-    return PHONE_SMS_PROVIDER_NEXSMS;
+  if (normalized === PHONE_SMS_PROVIDER_SMSBOWER || normalized === 'smsbower.app' || normalized === 'sms-bower') {
+    return PHONE_SMS_PROVIDER_SMSBOWER;
   }
   return PHONE_SMS_PROVIDER_HERO_SMS;
 }
@@ -1354,6 +1365,12 @@ function normalizePhoneSmsProviderOrder(value = [], fallbackOrder = []) {
   });
 
   if (normalized.length) {
+    DEFAULT_PHONE_SMS_PROVIDER_ORDER.forEach((provider) => {
+      if (!seen.has(provider)) {
+        seen.add(provider);
+        normalized.push(provider);
+      }
+    });
     return normalized.slice(0, DEFAULT_PHONE_SMS_PROVIDER_ORDER.length);
   }
 
@@ -1622,6 +1639,58 @@ function normalizeNexSmsServiceCode(value = '', fallback = DEFAULT_NEX_SMS_SERVI
     .toLowerCase()
     .replace(/[^a-z0-9_-]/g, '');
   return fallbackNormalized || DEFAULT_NEX_SMS_SERVICE_CODE;
+}
+
+function normalizeSmsbowerCountryId(value, fallback = 6) {
+  const parsed = Math.floor(Number(value));
+  if (Number.isFinite(parsed) && parsed >= 0) {
+    return parsed;
+  }
+  const fallbackParsed = Math.floor(Number(fallback));
+  if (Number.isFinite(fallbackParsed)) {
+    return fallbackParsed;
+  }
+  return 6;
+}
+
+function normalizeSmsbowerCountryOrder(value = []) {
+  const source = Array.isArray(value)
+    ? value
+    : String(value || '')
+      .split(/[\r\n,，;；]+/)
+      .map((entry) => String(entry || '').trim())
+      .filter(Boolean);
+  const normalized = [];
+  const seen = new Set();
+  source.forEach((entry) => {
+    const id = normalizeSmsbowerCountryId(
+      entry && typeof entry === 'object' && !Array.isArray(entry)
+        ? (entry.id || entry.countryId || entry.country || '')
+        : entry,
+      -1
+    );
+    if (id < 0 || seen.has(id)) {
+      return;
+    }
+    seen.add(id);
+    normalized.push(id);
+  });
+  return normalized.slice(0, 20);
+}
+
+function normalizeSmsbowerServiceCode(value = '', fallback = DEFAULT_SMSBOWER_SERVICE_CODE) {
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, '');
+  if (normalized) {
+    return normalized;
+  }
+  const fallbackNormalized = String(fallback || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, '');
+  return fallbackNormalized || DEFAULT_SMSBOWER_SERVICE_CODE;
 }
 
 function normalizePhonePreferredActivation(value) {
@@ -2829,6 +2898,22 @@ function normalizePersistentSettingValue(key, value) {
       return normalizeNexSmsCountryOrder(value);
     case 'nexSmsServiceCode':
       return normalizeNexSmsServiceCode(value);
+    case 'smsbowerApiKey':
+      return String(value || '');
+    case 'smsbowerBaseUrl': {
+      const trimmed = String(value || '').trim() || DEFAULT_SMSBOWER_BASE_URL;
+      try {
+        return new URL(trimmed).toString();
+      } catch {
+        return DEFAULT_SMSBOWER_BASE_URL;
+      }
+    }
+    case 'smsbowerCountryOrder':
+      return normalizeSmsbowerCountryOrder(value);
+    case 'smsbowerServiceCode':
+      return normalizeSmsbowerServiceCode(value, DEFAULT_SMSBOWER_SERVICE_CODE);
+    case 'smsbowerMaxPrice':
+      return normalizeHeroSmsMaxPrice(value);
     case 'phonePreferredActivation':
       return normalizePhonePreferredActivation(value);
     default:
@@ -7814,7 +7899,7 @@ function getSourceLabel(source) {
     'inbucket-mail': 'Inbucket 邮箱',
     'duck-mail': 'Duck 邮箱',
     'hotmail-api': 'Hotmail（API对接/本地助手）',
-    'luckmail-api': 'LuckMail（API 购邮）',
+    'luckmail-api': 'luckyous / LuckMail（mails.luckyous.com API 购邮）',
     'cloudflare-temp-email': 'Cloudflare Temp Email',
     'cloudmail': 'Cloud Mail',
     'plus-checkout': 'Plus Checkout',
@@ -11561,6 +11646,9 @@ const phoneVerificationHelpers = self.MultiPageBackgroundPhoneVerification?.crea
   DEFAULT_NEX_SMS_BASE_URL,
   DEFAULT_NEX_SMS_COUNTRY_ORDER,
   DEFAULT_NEX_SMS_SERVICE_CODE,
+  DEFAULT_SMSBOWER_BASE_URL,
+  DEFAULT_SMSBOWER_COUNTRY_ORDER,
+  DEFAULT_SMSBOWER_SERVICE_CODE,
   DEFAULT_HERO_SMS_BASE_URL,
   DEFAULT_HERO_SMS_REUSE_ENABLED,
   DEFAULT_PHONE_CODE_WAIT_SECONDS,
@@ -11606,6 +11694,7 @@ const phoneVerificationHelpers = self.MultiPageBackgroundPhoneVerification?.crea
   sleepWithStop,
   throwIfStopped,
   createFiveSimProvider: self.PhoneSmsFiveSimProvider?.createProvider,
+  createSmsbowerProvider: self.PhoneSmsBowerProvider?.createProvider,
 });
 const step1Executor = self.MultiPageBackgroundStep1?.createStep1Executor({
   addLog,
@@ -12144,7 +12233,7 @@ function getMailConfig(state) {
     };
   }
   if (provider === LUCKMAIL_PROVIDER) {
-    return { provider: LUCKMAIL_PROVIDER, label: 'LuckMail（API 购邮）' };
+    return { provider: LUCKMAIL_PROVIDER, label: 'luckyous / LuckMail（mails.luckyous.com API 购邮）' };
   }
   if (provider === CLOUDFLARE_TEMP_EMAIL_PROVIDER) {
     return { provider: CLOUDFLARE_TEMP_EMAIL_PROVIDER, label: 'Cloudflare Temp Email' };

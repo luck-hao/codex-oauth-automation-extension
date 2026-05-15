@@ -31,7 +31,7 @@
         'inbucket-mail': 'Inbucket 邮箱',
         'duck-mail': 'Duck 邮箱',
         'hotmail-api': 'Hotmail（API对接/本地助手）',
-        'luckmail-api': 'LuckMail（API 购邮）',
+        'luckmail-api': 'luckyous / LuckMail（mails.luckyous.com API 购邮）',
         'cloudflare-temp-email': 'Cloudflare Temp Email',
         'cloudmail': 'Cloud Mail',
         'plus-checkout': 'Plus Checkout',

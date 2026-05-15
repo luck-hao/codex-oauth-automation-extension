@@ -104,8 +104,8 @@
 
       if (!renderedPurchases.length) {
         selectedPurchaseIds.clear();
-        dom.luckmailList.innerHTML = '<div class="luckmail-empty">未找到 openai 项目的 LuckMail 邮箱。</div>';
-        dom.luckmailSummary.textContent = '加载已购邮箱后可在这里管理 openai 项目的 LuckMail 邮箱。';
+        dom.luckmailList.innerHTML = '<div class="luckmail-empty">未找到 openai 项目的 luckyous / LuckMail 邮箱。</div>';
+        dom.luckmailSummary.textContent = '加载已购邮箱后可在这里管理 openai 项目的 luckyous / LuckMail 邮箱。';
         if (dom.btnLuckmailDisableUsed) dom.btnLuckmailDisableUsed.disabled = true;
         updateLuckmailBulkUI([]);
         return;
@@ -122,7 +122,7 @@
 
       const visiblePurchases = getFilteredLuckmailPurchases(renderedPurchases);
       if (!visiblePurchases.length) {
-        dom.luckmailList.innerHTML = '<div class="luckmail-empty">没有匹配当前筛选条件的 LuckMail 邮箱。</div>';
+        dom.luckmailList.innerHTML = '<div class="luckmail-empty">没有匹配当前筛选条件的 luckyous / LuckMail 邮箱。</div>';
         updateLuckmailBulkUI([]);
         return;
       }
@@ -204,7 +204,7 @@
         return;
       }
 
-      if (!silent) setLuckmailLoadingState(true, '正在加载 LuckMail openai 邮箱...');
+      if (!silent) setLuckmailLoadingState(true, '正在加载 luckyous / LuckMail openai 邮箱...');
       try {
         const response = await runtime.sendMessage({
           type: 'LIST_LUCKMAIL_PURCHASES',
@@ -216,14 +216,14 @@
       } catch (err) {
         selectedPurchaseIds.clear();
         if (dom.luckmailList) {
-          dom.luckmailList.innerHTML = '<div class="luckmail-empty">无法加载 LuckMail 邮箱列表。</div>';
+          dom.luckmailList.innerHTML = '<div class="luckmail-empty">无法加载 luckyous / LuckMail 邮箱列表。</div>';
         }
         if (dom.luckmailSummary) {
           dom.luckmailSummary.textContent = err.message;
         }
         updateLuckmailBulkUI([]);
         if (!silent) {
-          helpers.showToast(`LuckMail 邮箱列表加载失败：${err.message}`, 'error');
+          helpers.showToast(`luckyous / LuckMail 邮箱列表加载失败：${err.message}`, 'error');
         }
       } finally {
         setLuckmailLoadingState(false);
@@ -249,11 +249,11 @@
         });
         if (response?.error) throw new Error(response.error);
         dom.inputEmail.value = response?.purchase?.email_address || purchase.email_address || '';
-        helpers.showToast(`已切换当前 LuckMail 邮箱为 ${purchase.email_address}`, 'success', 2200);
+        helpers.showToast(`已切换当前 luckyous / LuckMail 邮箱为 ${purchase.email_address}`, 'success', 2200);
         await refreshLuckmailPurchases({ silent: true });
       } catch (err) {
         if (dom.luckmailSummary) dom.luckmailSummary.textContent = err.message;
-        helpers.showToast(`切换 LuckMail 邮箱失败：${err.message}`, 'error');
+        helpers.showToast(`切换 luckyous / LuckMail 邮箱失败：${err.message}`, 'error');
       } finally {
         setLuckmailLoadingState(false);
       }
@@ -272,7 +272,7 @@
         await refreshLuckmailPurchases({ silent: true });
       } catch (err) {
         if (dom.luckmailSummary) dom.luckmailSummary.textContent = err.message;
-        helpers.showToast(`更新 LuckMail 已用状态失败：${err.message}`, 'error');
+        helpers.showToast(`更新 luckyous / LuckMail 已用状态失败：${err.message}`, 'error');
       } finally {
         setLuckmailLoadingState(false);
       }
@@ -291,7 +291,7 @@
         await refreshLuckmailPurchases({ silent: true });
       } catch (err) {
         if (dom.luckmailSummary) dom.luckmailSummary.textContent = err.message;
-        helpers.showToast(`更新 LuckMail 保留状态失败：${err.message}`, 'error');
+        helpers.showToast(`更新 luckyous / LuckMail 保留状态失败：${err.message}`, 'error');
       } finally {
         setLuckmailLoadingState(false);
       }
@@ -310,7 +310,7 @@
         await refreshLuckmailPurchases({ silent: true });
       } catch (err) {
         if (dom.luckmailSummary) dom.luckmailSummary.textContent = err.message;
-        helpers.showToast(`更新 LuckMail 禁用状态失败：${err.message}`, 'error');
+        helpers.showToast(`更新 luckyous / LuckMail 禁用状态失败：${err.message}`, 'error');
       } finally {
         setLuckmailLoadingState(false);
       }
@@ -334,7 +334,7 @@
         enable: '启用',
       };
 
-      setLuckmailLoadingState(true, `正在批量${actionLabelMap[action] || '处理'} LuckMail 邮箱...`);
+      setLuckmailLoadingState(true, `正在批量${actionLabelMap[action] || '处理'} luckyous / LuckMail 邮箱...`);
       try {
         const response = await runtime.sendMessage({
           type: 'BATCH_UPDATE_LUCKMAIL_PURCHASES',
@@ -342,11 +342,11 @@
           payload: { action, ids: selectedIds },
         });
         if (response?.error) throw new Error(response.error);
-        helpers.showToast(`已批量${actionLabelMap[action] || '处理'} ${selectedIds.length} 个 LuckMail 邮箱`, 'success', 2400);
+        helpers.showToast(`已批量${actionLabelMap[action] || '处理'} ${selectedIds.length} 个 luckyous / LuckMail 邮箱`, 'success', 2400);
         await refreshLuckmailPurchases({ silent: true });
       } catch (err) {
         if (dom.luckmailSummary) dom.luckmailSummary.textContent = err.message;
-        helpers.showToast(`批量处理 LuckMail 邮箱失败：${err.message}`, 'error');
+        helpers.showToast(`批量处理 luckyous / LuckMail 邮箱失败：${err.message}`, 'error');
       } finally {
         setLuckmailLoadingState(false);
         updateLuckmailBulkUI();
@@ -355,8 +355,8 @@
 
     async function disableUsedLuckmailPurchases() {
       const confirmed = await helpers.openConfirmModal({
-        title: '禁用已用 LuckMail 邮箱',
-        message: '确认禁用所有本地已用且未保留的 openai LuckMail 邮箱吗？',
+        title: '禁用已用 luckyous / LuckMail 邮箱',
+        message: '确认禁用所有本地已用且未保留的 openai luckyous / LuckMail 邮箱吗？',
         confirmLabel: '确认禁用',
         confirmVariant: 'btn-danger',
       });
@@ -364,7 +364,7 @@
         return;
       }
 
-      setLuckmailLoadingState(true, '正在禁用已用 LuckMail 邮箱...');
+      setLuckmailLoadingState(true, '正在禁用已用 luckyous / LuckMail 邮箱...');
       try {
         const response = await runtime.sendMessage({
           type: 'DISABLE_USED_LUCKMAIL_PURCHASES',
@@ -373,11 +373,11 @@
         });
         if (response?.error) throw new Error(response.error);
         const disabledCount = Array.isArray(response?.disabledIds) ? response.disabledIds.length : 0;
-        helpers.showToast(`已禁用 ${disabledCount} 个 LuckMail 邮箱`, disabledCount > 0 ? 'success' : 'info', 2400);
+        helpers.showToast(`已禁用 ${disabledCount} 个 luckyous / LuckMail 邮箱`, disabledCount > 0 ? 'success' : 'info', 2400);
         await refreshLuckmailPurchases({ silent: true });
       } catch (err) {
         if (dom.luckmailSummary) dom.luckmailSummary.textContent = err.message;
-        helpers.showToast(`禁用已用 LuckMail 邮箱失败：${err.message}`, 'error');
+        helpers.showToast(`禁用已用 luckyous / LuckMail 邮箱失败：${err.message}`, 'error');
       } finally {
         setLuckmailLoadingState(false);
       }
@@ -392,7 +392,7 @@
       if (dom.inputLuckmailSearch) dom.inputLuckmailSearch.value = '';
       if (dom.selectLuckmailFilter) dom.selectLuckmailFilter.value = 'all';
       if (dom.luckmailList) dom.luckmailList.innerHTML = '';
-      if (dom.luckmailSummary) dom.luckmailSummary.textContent = '加载已购邮箱后可在这里管理 openai 项目的 LuckMail 邮箱。';
+      if (dom.luckmailSummary) dom.luckmailSummary.textContent = '加载已购邮箱后可在这里管理 openai 项目的 luckyous / LuckMail 邮箱。';
       if (dom.btnLuckmailDisableUsed) dom.btnLuckmailDisableUsed.disabled = true;
       updateLuckmailBulkUI([]);
     }

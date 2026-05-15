@@ -87,9 +87,11 @@ test('sidepanel html exposes phone verification toggle and multi-provider SMS ro
   assert.match(html, /id="select-phone-sms-provider"/);
   assert.match(html, /\.\.\/phone-sms\/providers\/hero-sms\.js/);
   assert.match(html, /\.\.\/phone-sms\/providers\/five-sim\.js/);
+  assert.match(html, /\.\.\/phone-sms\/providers\/smsbower\.js/);
   assert.match(html, /\.\.\/phone-sms\/providers\/registry\.js/);
   assert.match(html, /<option value="hero-sms">HeroSMS<\/option>/);
   assert.match(html, /<option value="5sim">5sim<\/option>/);
+  assert.match(html, /<option value="smsbower">smsbower\.app<\/option>/);
   assert.match(html, /id="row-hero-sms-country"/);
   assert.match(html, /id="row-hero-sms-country-fallback"/);
   assert.match(html, /id="row-hero-sms-acquire-priority"/);
@@ -143,6 +145,16 @@ test('sidepanel html exposes phone verification toggle and multi-provider SMS ro
   assert.match(html, /id="row-nex-sms-country-fallback"/);
   assert.match(html, /id="row-nex-sms-service-code"/);
   assert.match(html, /id="input-nex-sms-service-code"/);
+  assert.match(html, /id="row-smsbower-api-key"/);
+  assert.match(html, /id="input-smsbower-api-key"/);
+  assert.match(html, /id="row-smsbower-base-url"/);
+  assert.match(html, /id="input-smsbower-base-url"/);
+  assert.match(html, /id="row-smsbower-country-order"/);
+  assert.match(html, /id="input-smsbower-country-order"/);
+  assert.match(html, /id="row-smsbower-service-code"/);
+  assert.match(html, /id="input-smsbower-service-code"/);
+  assert.match(html, /id="row-smsbower-max-price"/);
+  assert.match(html, /id="input-smsbower-max-price"/);
   assert.doesNotMatch(html, /id="input-account-run-history-text-enabled"/);
 });
 
@@ -533,13 +545,13 @@ const btnTogglePhoneVerificationSection = {
   title: '',
   setAttribute: () => {},
 };
-  const DEFAULT_PHONE_SMS_PROVIDER_ORDER = ['hero-sms', '5sim', 'nexsms'];
+  const DEFAULT_PHONE_SMS_PROVIDER_ORDER = ['hero-sms', '5sim', 'nexsms', 'smsbower'];
   const phoneSmsProviderOrderSelection = [];
   function normalizePhoneSmsProviderOrderValue(value = [], fallbackOrder = DEFAULT_PHONE_SMS_PROVIDER_ORDER) {
     const source = Array.isArray(value) ? value : [];
     const normalized = [...source];
     if (normalized.length) {
-      return normalized.slice(0, 3);
+      return normalized.slice(0, DEFAULT_PHONE_SMS_PROVIDER_ORDER.length);
     }
     if (!Array.isArray(fallbackOrder) || !fallbackOrder.length) {
       return [];
@@ -550,7 +562,7 @@ const btnTogglePhoneVerificationSection = {
         fallbackNormalized.push(provider);
       }
     }
-    return fallbackNormalized.slice(0, 3);
+    return fallbackNormalized.slice(0, DEFAULT_PHONE_SMS_PROVIDER_ORDER.length);
   }
   function resolveNormalizedProviderOrderForRuntime(state = {}) {
     const rawOrder = Array.isArray(state?.phoneSmsProviderOrder) ? state.phoneSmsProviderOrder : [];
@@ -577,6 +589,11 @@ const rowNexSmsApiKey = { style: { display: 'none' } };
 const rowNexSmsCountry = { style: { display: 'none' } };
 const rowNexSmsCountryFallback = { style: { display: 'none' } };
 const rowNexSmsServiceCode = { style: { display: 'none' } };
+const rowSmsbowerApiKey = { style: { display: 'none' } };
+const rowSmsbowerBaseUrl = { style: { display: 'none' } };
+const rowSmsbowerCountryOrder = { style: { display: 'none' } };
+const rowSmsbowerServiceCode = { style: { display: 'none' } };
+const rowSmsbowerMaxPrice = { style: { display: 'none' } };
 const rowHeroSmsRuntimePair = { style: { display: 'none' } };
 const rowHeroSmsCurrentNumber = { style: { display: 'none' } };
 const rowHeroSmsCurrentCountdown = { style: { display: 'none' } };
@@ -592,6 +609,7 @@ const rowPhoneCodePollMaxRounds = { style: { display: 'none' } };
 const PHONE_SMS_PROVIDER_HERO_SMS = 'hero-sms';
 const PHONE_SMS_PROVIDER_FIVE_SIM = '5sim';
 const PHONE_SMS_PROVIDER_NEXSMS = 'nexsms';
+const PHONE_SMS_PROVIDER_SMSBOWER = 'smsbower';
 function getSelectedPhoneSmsProvider() { return selectPhoneSmsProvider.value; }
 function isFiveSimProviderSelected() { return getSelectedPhoneSmsProvider() === PHONE_SMS_PROVIDER_FIVE_SIM; }
 function updateHeroSmsPlatformDisplay() {}
@@ -635,6 +653,11 @@ return {
   rowNexSmsCountry,
   rowNexSmsCountryFallback,
   rowNexSmsServiceCode,
+  rowSmsbowerApiKey,
+  rowSmsbowerBaseUrl,
+  rowSmsbowerCountryOrder,
+  rowSmsbowerServiceCode,
+  rowSmsbowerMaxPrice,
   rowHeroSmsRuntimePair,
   rowHeroSmsCurrentNumber,
   rowHeroSmsCurrentCountdown,
@@ -690,6 +713,11 @@ return {
   assert.equal(api.rowNexSmsCountry.style.display, 'none');
   assert.equal(api.rowNexSmsCountryFallback.style.display, 'none');
   assert.equal(api.rowNexSmsServiceCode.style.display, 'none');
+  assert.equal(api.rowSmsbowerApiKey.style.display, 'none');
+  assert.equal(api.rowSmsbowerBaseUrl.style.display, 'none');
+  assert.equal(api.rowSmsbowerCountryOrder.style.display, 'none');
+  assert.equal(api.rowSmsbowerServiceCode.style.display, 'none');
+  assert.equal(api.rowSmsbowerMaxPrice.style.display, 'none');
 
   api.inputPhoneVerificationEnabled.checked = true;
   api.setLatestState({ signupPhoneNumber: '66959916439' });
@@ -746,6 +774,14 @@ return {
   assert.equal(api.rowNexSmsCountry.style.display, '');
   assert.equal(api.rowNexSmsCountryFallback.style.display, '');
   assert.equal(api.rowNexSmsServiceCode.style.display, '');
+
+  api.setSelectedPhoneSmsProvider('smsbower');
+  api.updatePhoneVerificationSettingsUI();
+  assert.equal(api.rowSmsbowerApiKey.style.display, '');
+  assert.equal(api.rowSmsbowerBaseUrl.style.display, '');
+  assert.equal(api.rowSmsbowerCountryOrder.style.display, '');
+  assert.equal(api.rowSmsbowerServiceCode.style.display, '');
+  assert.equal(api.rowSmsbowerMaxPrice.style.display, '');
 });
 
 test('collectSettingsPayload keeps local helper sync enabled while persisting sms toggle state', () => {

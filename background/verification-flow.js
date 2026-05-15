@@ -505,19 +505,23 @@
       await chrome.tabs.update(signupTabId, { active: true });
       throwIfStopped();
 
-      const result = await sendToContentScript('signup-page', {
+      const resendMessage = {
         type: 'RESEND_VERIFICATION_CODE',
         step,
         source: 'background',
         payload: {},
-      }, {
+      };
+      const resendOptions = {
         responseTimeoutMs: await getResponseTimeoutMsForStep(
           step,
           options,
           30000,
           `重新发送${getVerificationCodeLabel(step)}验证码`
         ),
-      });
+      };
+      const result = typeof sendToContentScriptResilient === 'function'
+        ? await sendToContentScriptResilient('signup-page', resendMessage, resendOptions)
+        : await sendToContentScript('signup-page', resendMessage, resendOptions);
 
       if (result && result.error) {
         throw new Error(result.error);
@@ -909,7 +913,11 @@
               if (isStopError(resendError)) {
                 throw resendError;
               }
-              await addLog(`步骤 ${step}：LuckMail 点击重新发送验证码失败：${resendError.message}，仍将在 ${Math.ceil(intervalMs / 1000)} 秒后继续轮询 /code 接口。`, 'warn');
+              if (isRetryableVerificationTransportError(resendError)) {
+                await addLog(`步骤 ${step}：LuckMail 已触发重新发送验证码，但页面响应通道提前关闭；仍将在 ${Math.ceil(intervalMs / 1000)} 秒后继续轮询 /code 接口。`, 'info');
+              } else {
+                await addLog(`步骤 ${step}：LuckMail 点击重新发送验证码失败：${resendError.message}，仍将在 ${Math.ceil(intervalMs / 1000)} 秒后继续轮询 /code 接口。`, 'warn');
+              }
             }
           }
 
