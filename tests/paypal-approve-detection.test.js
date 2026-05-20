@@ -78,6 +78,12 @@ function createExecutor({
       if (message.type === 'PAYPAL_CLICK_APPROVE') {
         return { clicked: true };
       }
+      if (message.type === 'PAYPAL_CLICK_PROFILE') {
+        return { clicked: true, href: '/pay/profile?token=BA-demo' };
+      }
+      if (message.type === 'PAYPAL_CLICK_LOGOUT') {
+        return { clicked: true, buttonText: '退出登录' };
+      }
       return {};
     },
     setState: async () => {},
@@ -492,4 +498,54 @@ test('PayPal approve finishes when login redirects away from PayPal', async () =
   assert.equal(events.submittedPayloads.length, 1);
   assert.deepEqual(events.completed.map((item) => item.step), [8]);
   assert.equal(events.messages.includes('PAYPAL_CLICK_APPROVE'), false);
+});
+
+test('PayPal approve logs out an already signed-in account before approving', async () => {
+  const { executor, events } = createExecutor({
+    pageStates: [
+      { needsLogin: false, approveReady: false, profileReady: true, profileLinkHref: '/pay/profile?token=BA-demo' },
+      { needsLogin: false, approveReady: false, logoutReady: true, isProfilePage: true, logoutButtonText: '退出登录' },
+      { needsLogin: true, hasEmailInput: true, hasPasswordInput: true, loginPhase: 'login_combined' },
+      { needsLogin: false, approveReady: true },
+      { needsLogin: false, approveReady: true },
+    ],
+    submitResults: [
+      { submitted: true, phase: 'password_submitted', awaiting: 'redirect_or_approval' },
+    ],
+  });
+
+  await executor.executePayPalApprove({
+    paypalEmail: 'user@example.com',
+    paypalPassword: 'secret',
+  });
+
+  assert.deepStrictEqual(events.submittedPayloads, [
+    { email: 'user@example.com', password: 'secret' },
+  ]);
+  assert.deepEqual(events.completed.map((item) => item.step), [8]);
+  assert.equal(events.messages.includes('PAYPAL_CLICK_PROFILE'), true);
+  assert.equal(events.messages.includes('PAYPAL_CLICK_LOGOUT'), true);
+  assert.equal(events.messages.includes('PAYPAL_CLICK_APPROVE'), true);
+  assert.equal(events.messages.indexOf('PAYPAL_CLICK_PROFILE') < events.messages.indexOf('PAYPAL_CLICK_LOGOUT'), true);
+  assert.equal(events.messages.indexOf('PAYPAL_CLICK_LOGOUT') < events.messages.indexOf('PAYPAL_SUBMIT_LOGIN'), true);
+});
+
+test('PayPal approve prioritizes approval over profile logout when both are visible', async () => {
+  const { executor, events } = createExecutor({
+    pageStates: [
+      { needsLogin: false, approveReady: true, profileReady: true, logoutReady: true },
+      { needsLogin: false, approveReady: true, profileReady: true, logoutReady: true },
+    ],
+    submitResults: [],
+  });
+
+  await executor.executePayPalApprove({
+    paypalEmail: 'user@example.com',
+    paypalPassword: 'secret',
+  });
+
+  assert.deepEqual(events.completed.map((item) => item.step), [8]);
+  assert.equal(events.messages.includes('PAYPAL_CLICK_APPROVE'), true);
+  assert.equal(events.messages.includes('PAYPAL_CLICK_PROFILE'), false);
+  assert.equal(events.messages.includes('PAYPAL_CLICK_LOGOUT'), false);
 });

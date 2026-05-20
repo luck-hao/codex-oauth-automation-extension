@@ -229,12 +229,38 @@
       return Boolean(result?.clicked);
     }
 
+    async function clickProfile(tabId) {
+      const result = await sendTabMessageUntilStopped(tabId, PAYPAL_SOURCE, {
+        type: 'PAYPAL_CLICK_PROFILE',
+        source: 'background',
+        payload: {},
+      });
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+      return result || {};
+    }
+
+    async function clickLogout(tabId) {
+      const result = await sendTabMessageUntilStopped(tabId, PAYPAL_SOURCE, {
+        type: 'PAYPAL_CLICK_LOGOUT',
+        source: 'background',
+        payload: {},
+      });
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+      return result || {};
+    }
+
     async function executePayPalApprove(state = {}) {
       const tabId = await resolvePayPalTabId(state);
       await ensurePayPalReady(tabId);
       await setState({ plusCheckoutTabId: tabId });
 
       let loggedWaiting = false;
+      let profileClickCount = 0;
+      let logoutClickCount = 0;
       while (true) {
         const currentUrl = (await chrome.tabs.get(tabId).catch(() => null))?.url || '';
         if (currentUrl && !isPayPalUrl(currentUrl)) {
@@ -244,6 +270,34 @@
 
         await ensurePayPalReady(tabId, '步骤 8：PayPal 页面正在切换，等待脚本重新就绪...');
         const pageState = await getPayPalState(tabId);
+
+        if (!pageState.approveReady && pageState.logoutReady) {
+          if (logoutClickCount >= 3) {
+            throw new Error('步骤 8：PayPal profile 页面多次点击退出登录仍未离开，请手动检查账号状态。');
+          }
+          logoutClickCount += 1;
+          await addLog('步骤 8：检测到 PayPal 已登录账号页，正在退出登录...', 'info');
+          const result = await clickLogout(tabId);
+          if (result.clicked) {
+            loggedWaiting = false;
+            await sleepWithStop(1500);
+            continue;
+          }
+        }
+
+        if (!pageState.approveReady && pageState.profileReady) {
+          if (profileClickCount >= 3) {
+            throw new Error('步骤 8：PayPal 已登录错误页多次进入 profile 失败，请手动检查账号状态。');
+          }
+          profileClickCount += 1;
+          await addLog('步骤 8：检测到 PayPal 已登录账号入口，正在进入 profile 退出登录...', 'info');
+          const result = await clickProfile(tabId);
+          if (result.clicked) {
+            loggedWaiting = false;
+            await sleepWithStop(1500);
+            continue;
+          }
+        }
 
         if (pageState.needsLogin) {
           const submitResult = await submitLogin(tabId, state);

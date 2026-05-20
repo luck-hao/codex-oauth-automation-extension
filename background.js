@@ -44,6 +44,7 @@ importScripts(
   'background/steps/create-plus-checkout.js',
   'background/steps/fill-plus-checkout.js',
   'background/steps/gopay-manual-confirm.js',
+  'background/steps/custom-pay.js',
   'background/steps/paypal-approve.js',
   'background/steps/gopay-approve.js',
   'background/steps/plus-return-confirm.js',
@@ -83,6 +84,11 @@ const PLUS_GPC_STEP_DEFINITIONS = self.MultiPageStepDefinitions?.getSteps?.({
   plusModeEnabled: true,
   plusPaymentMethod: 'gpc-helper',
 }) || PLUS_GOPAY_STEP_DEFINITIONS;
+const PLUS_CUSTOM_PAY_STEP_DEFINITIONS = self.MultiPageStepDefinitions?.getSteps?.({
+  activeFlowId: DEFAULT_ACTIVE_FLOW_ID,
+  plusModeEnabled: true,
+  plusPaymentMethod: 'custom-pay',
+}) || PLUS_PAYPAL_STEP_DEFINITIONS;
 const PLUS_STEP_DEFINITIONS = PLUS_PAYPAL_STEP_DEFINITIONS;
 const ALL_STEP_DEFINITIONS = self.MultiPageStepDefinitions?.getAllSteps?.({
   activeFlowId: DEFAULT_ACTIVE_FLOW_ID,
@@ -91,6 +97,7 @@ const ALL_STEP_DEFINITIONS = self.MultiPageStepDefinitions?.getAllSteps?.({
   ...PLUS_PAYPAL_STEP_DEFINITIONS,
   ...PLUS_GOPAY_STEP_DEFINITIONS,
   ...PLUS_GPC_STEP_DEFINITIONS,
+  ...PLUS_CUSTOM_PAY_STEP_DEFINITIONS,
 ];
 const STEP_IDS = Array.from(new Set(ALL_STEP_DEFINITIONS
   .map((definition) => Number(definition?.id))
@@ -113,12 +120,17 @@ const PLUS_GPC_STEP_IDS = PLUS_GPC_STEP_DEFINITIONS
   .map((definition) => Number(definition?.id))
   .filter(Number.isFinite)
   .sort((left, right) => left - right);
+const PLUS_CUSTOM_PAY_STEP_IDS = PLUS_CUSTOM_PAY_STEP_DEFINITIONS
+  .map((definition) => Number(definition?.id))
+  .filter(Number.isFinite)
+  .sort((left, right) => left - right);
 const PLUS_STEP_IDS = PLUS_PAYPAL_STEP_IDS;
 const LAST_STEP_ID = Math.max(
   NORMAL_STEP_IDS[NORMAL_STEP_IDS.length - 1] || 10,
   PLUS_PAYPAL_STEP_IDS[PLUS_PAYPAL_STEP_IDS.length - 1] || 10,
   PLUS_GOPAY_STEP_IDS[PLUS_GOPAY_STEP_IDS.length - 1] || 10,
-  PLUS_GPC_STEP_IDS[PLUS_GPC_STEP_IDS.length - 1] || 10
+  PLUS_GPC_STEP_IDS[PLUS_GPC_STEP_IDS.length - 1] || 10,
+  PLUS_CUSTOM_PAY_STEP_IDS[PLUS_CUSTOM_PAY_STEP_IDS.length - 1] || 10
 );
 const FINAL_OAUTH_CHAIN_START_STEP = 7;
 
@@ -519,6 +531,7 @@ const FIVE_SIM_OPERATOR = DEFAULT_FIVE_SIM_OPERATOR;
 const PLUS_PAYMENT_METHOD_PAYPAL = 'paypal';
 const PLUS_PAYMENT_METHOD_GOPAY = 'gopay';
 const PLUS_PAYMENT_METHOD_GPC_HELPER = 'gpc-helper';
+const PLUS_PAYMENT_METHOD_CUSTOM_PAY = 'custom-pay';
 const DEFAULT_PLUS_PAYMENT_METHOD = PLUS_PAYMENT_METHOD_PAYPAL;
 const DISPLAY_TIMEZONE = 'Asia/Shanghai';
 const MICROSOFT_TOKEN_DNR_RULE_ID = 1001;
@@ -562,6 +575,9 @@ function normalizePlusPaymentMethod(value = '') {
   const normalized = String(value || '').trim().toLowerCase();
   if (normalized === PLUS_PAYMENT_METHOD_GPC_HELPER) {
     return PLUS_PAYMENT_METHOD_GPC_HELPER;
+  }
+  if (normalized === 'custom-pay') {
+    return PLUS_PAYMENT_METHOD_CUSTOM_PAY;
   }
   return normalized === PLUS_PAYMENT_METHOD_GOPAY ? PLUS_PAYMENT_METHOD_GOPAY : PLUS_PAYMENT_METHOD_PAYPAL;
 }
@@ -632,6 +648,9 @@ function getStepDefinitionsForState(state = {}) {
     return NORMAL_STEP_DEFINITIONS;
   }
   const paymentMethod = normalizePlusPaymentMethod(state?.plusPaymentMethod);
+  if (paymentMethod === PLUS_PAYMENT_METHOD_CUSTOM_PAY) {
+    return PLUS_CUSTOM_PAY_STEP_DEFINITIONS;
+  }
   if (paymentMethod === PLUS_PAYMENT_METHOD_GPC_HELPER) {
     return PLUS_GPC_STEP_DEFINITIONS;
   }
@@ -650,6 +669,9 @@ function getStepIdsForState(state = {}) {
     return NORMAL_STEP_IDS;
   }
   const paymentMethod = normalizePlusPaymentMethod(state?.plusPaymentMethod);
+  if (paymentMethod === PLUS_PAYMENT_METHOD_CUSTOM_PAY) {
+    return PLUS_CUSTOM_PAY_STEP_IDS;
+  }
   if (paymentMethod === PLUS_PAYMENT_METHOD_GPC_HELPER) {
     return PLUS_GPC_STEP_IDS;
   }
@@ -806,6 +828,11 @@ const PERSISTED_SETTING_DEFAULTS = {
   gopayHelperRemainingUses: 0,
   gopayHelperAutoModeEnabled: false,
   gopayHelperApiKeyStatus: '',
+  customPayAssistPhone: '',
+  customPayCardNumber: '',
+  customPayCardExpiry: '',
+  customPayCardCvv: '',
+  customPayOtpUrl: '',
   autoRunSkipFailures: false,
   autoRunFallbackThreadIntervalMinutes: 0,
   oauthFlowTimeoutEnabled: true,
@@ -1335,8 +1362,11 @@ function normalizePhoneSmsProvider(value = '') {
   if (normalized === PHONE_SMS_PROVIDER_FIVE_SIM) {
     return PHONE_SMS_PROVIDER_FIVE_SIM;
   }
-  if (normalized === PHONE_SMS_PROVIDER_SMSBOWER || normalized === 'smsbower.app' || normalized === 'sms-bower') {
-    return PHONE_SMS_PROVIDER_SMSBOWER;
+  if (normalized === 'nexsms') {
+    return 'nexsms';
+  }
+  if (normalized === 'smsbower' || normalized === 'smsbower.app' || normalized === 'sms-bower') {
+    return 'smsbower';
   }
   return PHONE_SMS_PROVIDER_HERO_SMS;
 }
@@ -1365,12 +1395,6 @@ function normalizePhoneSmsProviderOrder(value = [], fallbackOrder = []) {
   });
 
   if (normalized.length) {
-    DEFAULT_PHONE_SMS_PROVIDER_ORDER.forEach((provider) => {
-      if (!seen.has(provider)) {
-        seen.add(provider);
-        normalized.push(provider);
-      }
-    });
     return normalized.slice(0, DEFAULT_PHONE_SMS_PROVIDER_ORDER.length);
   }
 
@@ -1533,6 +1557,9 @@ function normalizePlusPaymentMethod(value = '') {
   const normalized = String(value || '').trim().toLowerCase();
   if (normalized === PLUS_PAYMENT_METHOD_GPC_HELPER) {
     return PLUS_PAYMENT_METHOD_GPC_HELPER;
+  }
+  if (normalized === 'custom-pay') {
+    return PLUS_PAYMENT_METHOD_CUSTOM_PAY;
   }
   return normalized === PLUS_PAYMENT_METHOD_GOPAY ? PLUS_PAYMENT_METHOD_GOPAY : PLUS_PAYMENT_METHOD_PAYPAL;
 }
@@ -2727,6 +2754,12 @@ function normalizePersistentSettingValue(key, value) {
     case 'gopayHelperOtpInvalidCount':
     case 'gopayHelperRemainingUses':
       return Math.max(0, Number(value) || 0);
+    case 'customPayAssistPhone':
+    case 'customPayCardNumber':
+    case 'customPayCardExpiry':
+    case 'customPayCardCvv':
+    case 'customPayOtpUrl':
+      return String(value || '').trim();
     case 'autoRunSkipFailures':
     case 'oauthFlowTimeoutEnabled':
     case 'gopayHelperLocalSmsHelperEnabled':
@@ -9382,6 +9415,8 @@ const AUTO_RUN_BACKGROUND_COMPLETED_STEP_KEYS = new Set([
   'plus-checkout-billing',
   'paypal-approve',
   'plus-checkout-return',
+  'custom-pay-generate-hosted-link',
+  'custom-pay-otp-confirm',
   'oauth-login',
   'fetch-login-code',
   'confirm-oauth',
@@ -9390,10 +9425,12 @@ const STEP_COMPLETION_SIGNAL_STEP_KEYS = new Set([
   'fill-password',
   'fill-profile',
   'gopay-subscription-confirm',
+  'custom-pay-paypal-assist',
   'platform-verify',
 ]);
 const STEP_COMPLETION_SIGNAL_TIMEOUTS_BY_STEP_KEY = new Map([
   ['gopay-subscription-confirm', 1800000],
+  ['custom-pay-paypal-assist', 1800000],
 ]);
 const AUTO_RUN_PRE_EXECUTION_DELAYS_BY_STEP_KEY = new Map([
   ['plus-checkout-create', 20000],
@@ -11886,6 +11923,21 @@ const goPayManualConfirmExecutor = self.MultiPageBackgroundGoPayManualConfirm?.c
   createAutomationTab,
   setState,
 });
+const customPayExecutor = self.MultiPageBackgroundCustomPay?.createCustomPayExecutor({
+  addLog,
+  broadcastDataUpdate,
+  chrome,
+  completeStepFromBackground,
+  createAutomationTab,
+  getTabId,
+  isTabAlive,
+  queryTabsInAutomationWindow,
+  registerTab,
+  setState,
+  sleepWithStop,
+  throwIfStopped,
+  waitForTabCompleteUntilStopped,
+});
 const payPalApproveExecutor = self.MultiPageBackgroundPayPalApprove?.createPayPalApproveExecutor({
   addLog,
   chrome,
@@ -11958,6 +12010,9 @@ const stepExecutorsByKey = {
   'plus-checkout-create': (state) => plusCheckoutCreateExecutor.executePlusCheckoutCreate(state),
   'plus-checkout-billing': (state) => plusCheckoutBillingExecutor.executePlusCheckoutBilling(state),
   'gopay-subscription-confirm': (state) => goPayManualConfirmExecutor.executeGoPayManualConfirm(state),
+  'custom-pay-generate-hosted-link': (state) => customPayExecutor.executeCustomPayGenerateHostedLink(state),
+  'custom-pay-paypal-assist': (state) => customPayExecutor.executeCustomPayPayPalAssist(state),
+  'custom-pay-otp-confirm': (state) => customPayExecutor.executeCustomPayOtpConfirm(state),
   'paypal-approve': (state) => normalizePlusPaymentMethod(state?.plusPaymentMethod) === PLUS_PAYMENT_METHOD_GOPAY
     ? goPayApproveExecutor.executeGoPayApprove(state)
     : payPalApproveExecutor.executePayPalApprove(state),
@@ -12111,6 +12166,7 @@ const normalStepRegistry = buildStepRegistry(NORMAL_STEP_DEFINITIONS);
 const plusPayPalStepRegistry = buildStepRegistry(PLUS_PAYPAL_STEP_DEFINITIONS);
 const plusGoPayStepRegistry = buildStepRegistry(PLUS_GOPAY_STEP_DEFINITIONS);
 const plusGpcStepRegistry = buildStepRegistry(PLUS_GPC_STEP_DEFINITIONS);
+const plusCustomPayStepRegistry = buildStepRegistry(PLUS_CUSTOM_PAY_STEP_DEFINITIONS);
 
 function getStepRegistryForState(state = {}) {
   const activeFlowId = String(state?.activeFlowId || DEFAULT_ACTIVE_FLOW_ID).trim().toLowerCase() || DEFAULT_ACTIVE_FLOW_ID;
@@ -12121,6 +12177,9 @@ function getStepRegistryForState(state = {}) {
     return normalStepRegistry;
   }
   const paymentMethod = normalizePlusPaymentMethod(state?.plusPaymentMethod);
+  if (paymentMethod === PLUS_PAYMENT_METHOD_CUSTOM_PAY) {
+    return plusCustomPayStepRegistry;
+  }
   if (paymentMethod === PLUS_PAYMENT_METHOD_GPC_HELPER) {
     return plusGpcStepRegistry;
   }

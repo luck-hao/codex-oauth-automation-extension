@@ -649,6 +649,7 @@ test('country and region helpers recognize the dropdown-style localized address 
     extractFunction('isEnabledControl'),
     extractFunction('isDocumentLevelContainer'),
     extractFunction('getCountryCandidates'),
+    extractFunction('compactCountryText'),
     extractFunction('matchesCountryOption'),
     extractFunction('findCountryDropdown'),
     extractFunction('getRegionCandidates'),

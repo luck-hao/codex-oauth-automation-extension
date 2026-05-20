@@ -13,6 +13,8 @@ if (document.documentElement.getAttribute(PAYPAL_FLOW_LISTENER_SENTINEL) !== '1'
       || message.type === 'PAYPAL_SUBMIT_LOGIN'
       || message.type === 'PAYPAL_DISMISS_PROMPTS'
       || message.type === 'PAYPAL_CLICK_APPROVE'
+      || message.type === 'PAYPAL_CLICK_PROFILE'
+      || message.type === 'PAYPAL_CLICK_LOGOUT'
     ) {
       resetStopState();
       handlePayPalCommand(message).then((result) => {
@@ -47,6 +49,10 @@ async function handlePayPalCommand(message) {
       return dismissPayPalPrompts();
     case 'PAYPAL_CLICK_APPROVE':
       return clickPayPalApprove();
+    case 'PAYPAL_CLICK_PROFILE':
+      return clickPayPalProfile();
+    case 'PAYPAL_CLICK_LOGOUT':
+      return clickPayPalLogout();
     default:
       throw new Error(`paypal-flow.js 不处理消息：${message.type}`);
   }
@@ -221,6 +227,36 @@ function findApproveButton() {
     /同意并继续|同意|继续|授权|确认并继续/i,
     /agree\s*(?:and)?\s*continue|continue|accept|authorize|agree|pay\s*now/i,
   ]);
+}
+
+function getPayPalHref(el) {
+  return String(el?.href || el?.getAttribute?.('href') || '').trim();
+}
+
+function findPayPalProfileLink() {
+  return getVisibleControls('a, [role="link"], [href]')
+    .find((el) => {
+      const href = getPayPalHref(el);
+      const text = getActionText(el);
+      return /\/pay\/profile(?:\?|$)/i.test(href)
+        || (/profile|account|账户|头像|个人资料/i.test(text) && /paypal/i.test(`${href} ${location.href}`));
+    }) || null;
+}
+
+function isPayPalProfilePage() {
+  return /\/pay\/profile(?:\?|$)/i.test(location.pathname + location.search)
+    || getVisibleControls('[data-atomic-wait-viewname="profile"]').length > 0;
+}
+
+function findPayPalLogoutButton() {
+  return getVisibleControls('button, a, [role="button"], input[type="button"], input[type="submit"]')
+    .find((el) => {
+      const text = getActionText(el);
+      return el.getAttribute?.('data-atomic-wait-intent') === 'Logout'
+        || el.getAttribute?.('data-atomic-wait-task') === 'select_logout'
+        || (el.getAttribute?.('data-atomic-wait-viewname') === 'profile' && /logout|log\s*out|退出登录|登出|注销/i.test(text))
+        || /^(logout|log\s*out|退出登录|登出|注销)$/i.test(text);
+    }) || null;
 }
 
 function findPasskeyPromptButtons() {
@@ -423,10 +459,63 @@ async function clickPayPalApprove() {
   };
 }
 
+async function clickPayPalProfile() {
+  const delayOperation = typeof performPayPalOperationWithDelay === 'function'
+    ? performPayPalOperationWithDelay
+    : async (metadata, operation) => {
+        const rootScope = typeof window !== 'undefined' ? window : globalThis;
+        const gate = rootScope?.CodexOperationDelay?.performOperationWithDelay;
+        return typeof gate === 'function' ? gate(metadata, operation) : operation();
+      };
+  await waitForDocumentComplete();
+  const link = findPayPalProfileLink();
+  if (!link || !isEnabledControl(link)) {
+    return {
+      clicked: false,
+      state: inspectPayPalState(),
+    };
+  }
+  await delayOperation({ stepKey: 'paypal-approve', kind: 'click', label: 'paypal-profile' }, async () => {
+    simulateClick(link);
+  });
+  return {
+    clicked: true,
+    href: getPayPalHref(link),
+    buttonText: getActionText(link),
+  };
+}
+
+async function clickPayPalLogout() {
+  const delayOperation = typeof performPayPalOperationWithDelay === 'function'
+    ? performPayPalOperationWithDelay
+    : async (metadata, operation) => {
+        const rootScope = typeof window !== 'undefined' ? window : globalThis;
+        const gate = rootScope?.CodexOperationDelay?.performOperationWithDelay;
+        return typeof gate === 'function' ? gate(metadata, operation) : operation();
+      };
+  await waitForDocumentComplete();
+  const button = findPayPalLogoutButton();
+  if (!button || !isEnabledControl(button)) {
+    return {
+      clicked: false,
+      state: inspectPayPalState(),
+    };
+  }
+  await delayOperation({ stepKey: 'paypal-approve', kind: 'click', label: 'paypal-logout' }, async () => {
+    simulateClick(button);
+  });
+  return {
+    clicked: true,
+    buttonText: getActionText(button),
+  };
+}
+
 function inspectPayPalState() {
   const emailInput = findEmailInput();
   const passwordInput = findPasswordInput();
   const approveButton = findApproveButton();
+  const profileLink = findPayPalProfileLink();
+  const logoutButton = findPayPalLogoutButton();
   const loginPhase = getPayPalLoginPhase(emailInput, passwordInput);
   return {
     url: location.href,
@@ -437,6 +526,11 @@ function inspectPayPalState() {
     hasPasswordInput: Boolean(passwordInput),
     approveReady: Boolean(approveButton && isEnabledControl(approveButton)),
     approveButtonText: approveButton ? getActionText(approveButton) : '',
+    profileReady: Boolean(profileLink && isEnabledControl(profileLink)),
+    profileLinkHref: profileLink ? getPayPalHref(profileLink) : '',
+    isProfilePage: isPayPalProfilePage(),
+    logoutReady: Boolean(logoutButton && isEnabledControl(logoutButton)),
+    logoutButtonText: logoutButton ? getActionText(logoutButton) : '',
     hasPasskeyPrompt: hasPasskeyPrompt(),
     bodyTextPreview: normalizeText(document.body?.innerText || '').slice(0, 240),
   };

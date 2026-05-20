@@ -4,6 +4,7 @@
   const PLUS_PAYMENT_METHOD_PAYPAL = 'paypal';
   const PLUS_PAYMENT_METHOD_GOPAY = 'gopay';
   const PLUS_PAYMENT_METHOD_GPC_HELPER = 'gpc-helper';
+  const PLUS_PAYMENT_METHOD_CUSTOM_PAY = 'custom-pay';
   const DEFAULT_GPC_HELPER_API_URL = 'https://gpc.qlhazycoder.top';
   const GPC_HELPER_PHONE_MODE_AUTO = 'auto';
   const GPC_HELPER_PHONE_MODE_MANUAL = 'manual';
@@ -13,6 +14,9 @@
     const normalized = String(value || '').trim().toLowerCase();
     if (normalized === PLUS_PAYMENT_METHOD_GPC_HELPER) {
       return PLUS_PAYMENT_METHOD_GPC_HELPER;
+    }
+    if (normalized === PLUS_PAYMENT_METHOD_CUSTOM_PAY) {
+      return PLUS_PAYMENT_METHOD_CUSTOM_PAY;
     }
     return normalized === PLUS_PAYMENT_METHOD_GOPAY ? PLUS_PAYMENT_METHOD_GOPAY : PLUS_PAYMENT_METHOD_PAYPAL;
   }
@@ -413,6 +417,7 @@
     DEFAULT_GPC_HELPER_API_URL,
     GPC_HELPER_PHONE_MODE_AUTO,
     GPC_HELPER_PHONE_MODE_MANUAL,
+    PLUS_PAYMENT_METHOD_CUSTOM_PAY,
     PLUS_PAYMENT_METHOD_GPC_HELPER,
     PLUS_PAYMENT_METHOD_GOPAY,
     PLUS_PAYMENT_METHOD_PAYPAL,

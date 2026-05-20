@@ -142,12 +142,8 @@ const btnSub2ApiGroupMenu = document.getElementById('btn-sub2api-group-menu')
 const sub2ApiGroupCurrent = document.getElementById('sub2api-group-current')
 const sub2ApiGroupMenu = document.getElementById('sub2api-group-menu')
 const btnAddSub2ApiGroup = document.getElementById('btn-add-sub2api-group')
-const rowSub2ApiAccountPriority = document.getElementById(
-  'row-sub2api-account-priority'
-)
-const inputSub2ApiAccountPriority = document.getElementById(
-  'input-sub2api-account-priority'
-)
+const rowSub2ApiAccountPriority = document.getElementById('row-sub2api-account-priority');
+const inputSub2ApiAccountPriority = document.getElementById('input-sub2api-account-priority');
 const rowSub2ApiDefaultProxy = document.getElementById(
   'row-sub2api-default-proxy'
 )
@@ -353,6 +349,30 @@ const rowGoPayOtp = document.getElementById('row-gopay-otp')
 const inputGoPayOtp = document.getElementById('input-gopay-otp')
 const rowGoPayPin = document.getElementById('row-gopay-pin')
 const inputGoPayPin = document.getElementById('input-gopay-pin')
+const rowCustomPayAssistPhone = document.getElementById(
+  'row-custom-pay-assist-phone'
+)
+const inputCustomPayAssistPhone = document.getElementById(
+  'input-custom-pay-assist-phone'
+)
+const rowCustomPayCardNumber = document.getElementById(
+  'row-custom-pay-card-number'
+)
+const inputCustomPayCardNumber = document.getElementById(
+  'input-custom-pay-card-number'
+)
+const rowCustomPayCardExpiry = document.getElementById(
+  'row-custom-pay-card-expiry'
+)
+const inputCustomPayCardExpiry = document.getElementById(
+  'input-custom-pay-card-expiry'
+)
+const rowCustomPayCardCvv = document.getElementById('row-custom-pay-card-cvv')
+const inputCustomPayCardCvv = document.getElementById(
+  'input-custom-pay-card-cvv'
+)
+const rowCustomPayOtpUrl = document.getElementById('row-custom-pay-otp-url')
+const inputCustomPayOtpUrl = document.getElementById('input-custom-pay-otp-url')
 const selectMailProvider = document.getElementById('select-mail-provider')
 const btnMailLogin = document.getElementById('btn-mail-login')
 const rowCustomMailProviderPool = document.getElementById(
@@ -525,9 +545,7 @@ const rowIcloudForwardMailProvider = document.getElementById(
 const selectIcloudForwardMailProvider = document.getElementById(
   'select-icloud-forward-mail-provider'
 )
-const selectIcloudFetchMode = document.getElementById(
-  'select-icloud-fetch-mode'
-)
+const selectIcloudFetchMode = document.getElementById('select-icloud-fetch-mode');
 const checkboxAutoDeleteIcloud = document.getElementById(
   'checkbox-auto-delete-icloud'
 )
@@ -858,15 +876,9 @@ const inputPhoneCodePollMaxRounds = document.getElementById(
 const inputHeroSmsReuseEnabled = document.getElementById(
   'input-hero-sms-reuse-enabled'
 )
-const inputFreePhoneReuseEnabled = document.getElementById(
-  'input-free-phone-reuse-enabled'
-)
-const inputFreePhoneReuseAutoEnabled = document.getElementById(
-  'input-free-phone-reuse-auto-enabled'
-)
-const inputFreeReusablePhone = document.getElementById(
-  'input-free-reusable-phone'
-)
+const inputFreePhoneReuseEnabled = document.getElementById('input-free-phone-reuse-enabled');
+const inputFreePhoneReuseAutoEnabled = document.getElementById('input-free-phone-reuse-auto-enabled');
+const inputFreeReusablePhone = document.getElementById('input-free-reusable-phone');
 const selectHeroSmsCountry = document.getElementById('select-hero-sms-country')
 const selectHeroSmsCountryFallback = document.getElementById(
   'select-hero-sms-country-fallback'
@@ -947,9 +959,7 @@ const displayHeroSmsCurrentCode = document.getElementById(
 const displayFreeReusablePhoneCountry = document.getElementById(
   'display-free-reusable-phone-country'
 )
-const displayFreeReusablePhone = document.getElementById(
-  'display-free-reusable-phone'
-)
+const displayFreeReusablePhone = document.getElementById('display-free-reusable-phone');
 const displayHeroSmsCountryFallbackOrder = document.getElementById(
   'display-hero-sms-country-fallback-order'
 )
@@ -962,12 +972,8 @@ const displayNexSmsCountryFallbackOrder = document.getElementById(
 const displayPhoneSmsProviderOrder = document.getElementById(
   'display-phone-sms-provider-order'
 )
-const btnSaveFreeReusablePhone = document.getElementById(
-  'btn-save-free-reusable-phone'
-)
-const btnClearFreeReusablePhone = document.getElementById(
-  'btn-clear-free-reusable-phone'
-)
+const btnSaveFreeReusablePhone = document.getElementById('btn-save-free-reusable-phone');
+const btnClearFreeReusablePhone = document.getElementById('btn-clear-free-reusable-phone');
 const rowAccountRunHistoryHelperBaseUrl = document.getElementById(
   'row-account-run-history-helper-base-url'
 )
@@ -1008,6 +1014,7 @@ const stepsList = document.querySelector('.steps-list')
 const PLUS_PAYMENT_METHOD_PAYPAL = 'paypal'
 const PLUS_PAYMENT_METHOD_GOPAY = 'gopay'
 const PLUS_PAYMENT_METHOD_GPC_HELPER = 'gpc-helper'
+const PLUS_PAYMENT_METHOD_CUSTOM_PAY = 'custom-pay'
 const DEFAULT_GPC_HELPER_API_URL = 'https://gpc.qlhazycoder.top'
 const GPC_HELPER_PORTAL_URL = 'https://gpc.qlhazycoder.top/'
 const GPC_HELPER_PHONE_MODE_AUTO = 'auto'
@@ -1017,7 +1024,7 @@ const SIGNUP_METHOD_EMAIL = 'email'
 const SIGNUP_METHOD_PHONE = 'phone'
 const DEFAULT_SIGNUP_METHOD = SIGNUP_METHOD_EMAIL
 const DEFAULT_ACTIVE_FLOW_ID = 'openai'
-let latestState = null
+let latestState = null;
 let currentPlusModeEnabled = false
 let currentPlusPaymentMethod = DEFAULT_PLUS_PAYMENT_METHOD
 let currentSignupMethod = DEFAULT_SIGNUP_METHOD
@@ -3114,6 +3121,10 @@ function normalizePlusPaymentMethod(value = '') {
     typeof PLUS_PAYMENT_METHOD_GPC_HELPER !== 'undefined'
       ? PLUS_PAYMENT_METHOD_GPC_HELPER
       : 'gpc-helper'
+  const customPayValue =
+    typeof PLUS_PAYMENT_METHOD_CUSTOM_PAY !== 'undefined'
+      ? PLUS_PAYMENT_METHOD_CUSTOM_PAY
+      : 'custom-pay'
   const paypalValue =
     typeof PLUS_PAYMENT_METHOD_PAYPAL !== 'undefined'
       ? PLUS_PAYMENT_METHOD_PAYPAL
@@ -3123,6 +3134,9 @@ function normalizePlusPaymentMethod(value = '') {
     .toLowerCase()
   if (normalized === gpcValue) {
     return gpcValue
+  }
+  if (normalized === customPayValue) {
+    return customPayValue
   }
   return normalized === gopayValue ? gopayValue : paypalValue
 }
@@ -4665,43 +4679,107 @@ function collectSettingsPayload() {
       : normalizeNexSmsServiceCodeForPayload(
           latestState?.nexSmsServiceCode || defaultNexSmsServiceCode
         )
+  const defaultSmsbowerBaseUrl =
+    typeof DEFAULT_SMSBOWER_BASE_URL !== 'undefined'
+      ? DEFAULT_SMSBOWER_BASE_URL
+      : 'https://smsbower.page/stubs/handler_api.php'
+  const normalizeSmsbowerBaseUrlSafe =
+    typeof normalizeSmsbowerBaseUrlValue === 'function'
+      ? normalizeSmsbowerBaseUrlValue
+      : (value = '') => {
+          const fallback = 'https://smsbower.page/stubs/handler_api.php'
+          const rawValue = String(value || fallback).trim() || fallback
+          try {
+            return new URL(rawValue).toString()
+          } catch {
+            return fallback
+          }
+        }
+  const normalizeSmsbowerCountryOrderSafe =
+    typeof normalizeSmsbowerCountryOrderValue === 'function'
+      ? normalizeSmsbowerCountryOrderValue
+      : (value = []) => {
+          const source = Array.isArray(value)
+            ? value
+            : String(value || '')
+                .split(/[\r\n,，;；]+/)
+                .map((entry) => String(entry || '').trim())
+                .filter(Boolean)
+          const normalized = []
+          const seen = new Set()
+          source.forEach((entry) => {
+            const rawValue =
+              entry && typeof entry === 'object' && !Array.isArray(entry)
+                ? entry.id || entry.countryId || entry.country || ''
+                : String(entry || '').match(/^(\d+)\s*(?:[:|/-]\s*.+)?$/)?.[1] || entry
+            const countryId = Math.floor(Number(rawValue))
+            if (!Number.isFinite(countryId) || countryId < 0 || seen.has(countryId)) {
+              return
+            }
+            seen.add(countryId)
+            normalized.push(countryId)
+          })
+          return normalized.slice(0, 20)
+        }
+  const normalizeSmsbowerServiceCodeSafe =
+    typeof normalizeSmsbowerServiceCodeValue === 'function'
+      ? normalizeSmsbowerServiceCodeValue
+      : (value = '') =>
+          String(value || '')
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9_-]/g, '') || defaultSmsbowerServiceCode
+  const normalizeSmsbowerMaxPriceSafe =
+    typeof normalizeSmsbowerMaxPriceValue === 'function'
+      ? normalizeSmsbowerMaxPriceValue
+      : (value = '') => {
+          const rawValue = String(value ?? '').trim()
+          if (!rawValue) {
+            return ''
+          }
+          const numeric = Number(rawValue)
+          if (!Number.isFinite(numeric) || numeric <= 0) {
+            return ''
+          }
+          return String(Math.round(numeric * 10000) / 10000)
+        }
   const smsbowerBaseUrlValue =
     typeof inputSmsbowerBaseUrl !== 'undefined' && inputSmsbowerBaseUrl
-      ? normalizeSmsbowerBaseUrlValue(
+      ? normalizeSmsbowerBaseUrlSafe(
           inputSmsbowerBaseUrl.value ||
             latestState?.smsbowerBaseUrl ||
-            DEFAULT_SMSBOWER_BASE_URL
+            defaultSmsbowerBaseUrl
         )
-      : normalizeSmsbowerBaseUrlValue(
-          latestState?.smsbowerBaseUrl || DEFAULT_SMSBOWER_BASE_URL
+      : normalizeSmsbowerBaseUrlSafe(
+          latestState?.smsbowerBaseUrl || defaultSmsbowerBaseUrl
         )
   const smsbowerCountryOrderValue =
     typeof inputSmsbowerCountryOrder !== 'undefined' &&
     inputSmsbowerCountryOrder
-      ? normalizeSmsbowerCountryOrderValue(
+      ? normalizeSmsbowerCountryOrderSafe(
           inputSmsbowerCountryOrder.value ||
             latestState?.smsbowerCountryOrder ||
             defaultSmsbowerCountryOrder
         )
-      : normalizeSmsbowerCountryOrderValue(
+      : normalizeSmsbowerCountryOrderSafe(
           latestState?.smsbowerCountryOrder || defaultSmsbowerCountryOrder
         )
   const smsbowerServiceCodeValue =
     typeof inputSmsbowerServiceCode !== 'undefined' && inputSmsbowerServiceCode
-      ? normalizeSmsbowerServiceCodeValue(
+      ? normalizeSmsbowerServiceCodeSafe(
           inputSmsbowerServiceCode.value ||
             latestState?.smsbowerServiceCode ||
             defaultSmsbowerServiceCode
         )
-      : normalizeSmsbowerServiceCodeValue(
+      : normalizeSmsbowerServiceCodeSafe(
           latestState?.smsbowerServiceCode || defaultSmsbowerServiceCode
         )
   const smsbowerMaxPriceValue =
     typeof inputSmsbowerMaxPrice !== 'undefined' && inputSmsbowerMaxPrice
-      ? normalizeSmsbowerMaxPriceValue(
+      ? normalizeSmsbowerMaxPriceSafe(
           inputSmsbowerMaxPrice.value || latestState?.smsbowerMaxPrice || ''
         )
-      : normalizeSmsbowerMaxPriceValue(latestState?.smsbowerMaxPrice || '')
+      : normalizeSmsbowerMaxPriceSafe(latestState?.smsbowerMaxPrice || '')
   const heroSmsPreferredPriceValue =
     typeof inputHeroSmsPreferredPrice !== 'undefined' &&
     inputHeroSmsPreferredPrice
@@ -4998,10 +5076,9 @@ function collectSettingsPayload() {
   if (sub2apiGroupNames.length === 0) {
     appendSub2ApiGroupNames(['codex', 'openai-plus'])
   }
-  const sub2apiAccountPriorityNormalizer =
-    typeof normalizeSub2ApiAccountPriorityValue === 'function'
-      ? normalizeSub2ApiAccountPriorityValue
-      : (value) => {
+  const sub2apiAccountPriorityNormalizer = typeof normalizeSub2ApiAccountPriorityValue === 'function'
+    ? normalizeSub2ApiAccountPriorityValue
+    : (value) => {
           const numeric = Number(String(value ?? '').trim())
           return Number.isSafeInteger(numeric) && numeric >= 1 ? numeric : 1
         }
@@ -5152,6 +5229,29 @@ function collectSettingsPayload() {
         ? inputGpcHelperLocalSmsUrl.value
         : latestState?.gopayHelperLocalSmsHelperUrl || ''
     ),
+    customPayAssistPhone:
+      typeof inputCustomPayAssistPhone !== 'undefined' &&
+      inputCustomPayAssistPhone
+        ? String(inputCustomPayAssistPhone.value || '').trim()
+        : String(latestState?.customPayAssistPhone || '').trim(),
+    customPayCardNumber:
+      typeof inputCustomPayCardNumber !== 'undefined' &&
+      inputCustomPayCardNumber
+        ? String(inputCustomPayCardNumber.value || '').trim()
+        : String(latestState?.customPayCardNumber || '').trim(),
+    customPayCardExpiry:
+      typeof inputCustomPayCardExpiry !== 'undefined' &&
+      inputCustomPayCardExpiry
+        ? String(inputCustomPayCardExpiry.value || '').trim()
+        : String(latestState?.customPayCardExpiry || '').trim(),
+    customPayCardCvv:
+      typeof inputCustomPayCardCvv !== 'undefined' && inputCustomPayCardCvv
+        ? String(inputCustomPayCardCvv.value || '').trim()
+        : String(latestState?.customPayCardCvv || '').trim(),
+    customPayOtpUrl:
+      typeof inputCustomPayOtpUrl !== 'undefined' && inputCustomPayOtpUrl
+        ? String(inputCustomPayOtpUrl.value || '').trim()
+        : String(latestState?.customPayOtpUrl || '').trim(),
     ...(contributionModeEnabled
       ? {}
       : {
@@ -5370,15 +5470,15 @@ function normalizePhoneSmsProvider(value = '') {
   if (normalized === PHONE_SMS_PROVIDER_FIVE_SIM) {
     return PHONE_SMS_PROVIDER_FIVE_SIM
   }
-  if (normalized === PHONE_SMS_PROVIDER_NEXSMS) {
-    return PHONE_SMS_PROVIDER_NEXSMS
+  if (normalized === 'nexsms') {
+    return 'nexsms'
   }
   if (
-    normalized === PHONE_SMS_PROVIDER_SMSBOWER ||
+    normalized === 'smsbower' ||
     normalized === 'smsbower.app' ||
     normalized === 'sms-bower'
   ) {
-    return PHONE_SMS_PROVIDER_SMSBOWER
+    return 'smsbower'
   }
   return PHONE_SMS_PROVIDER_HERO_SMS
 }
@@ -5468,8 +5568,10 @@ function normalizePhoneSmsMaxPriceValue(
   if (normalizedProvider === PHONE_SMS_PROVIDER_FIVE_SIM) {
     return normalizeFiveSimMaxPriceValue(value)
   }
-  if (normalizedProvider === PHONE_SMS_PROVIDER_SMSBOWER) {
-    return normalizeSmsbowerMaxPriceValue(value)
+  if (normalizedProvider === 'smsbower') {
+    return typeof normalizeSmsbowerMaxPriceValue === 'function'
+      ? normalizeSmsbowerMaxPriceValue(value)
+      : normalizeHeroSmsMaxPriceValue(value)
   }
   return normalizeHeroSmsMaxPriceValue(value)
 }
@@ -7196,7 +7298,7 @@ function renderHeroSmsCountryFallbackOrder(countries = []) {
   if (!displayHeroSmsCountryFallbackOrder) {
     return
   }
-  displayHeroSmsCountryFallbackOrder.textContent = ''
+  displayHeroSmsCountryFallbackOrder.textContent = '';
   const normalized = isFiveSimProviderSelected()
     ? normalizeFiveSimCountryFallbackList(countries)
     : normalizeHeroSmsCountryFallbackList(countries)
@@ -10364,6 +10466,10 @@ function updatePlusModeUI() {
     typeof PLUS_PAYMENT_METHOD_GPC_HELPER !== 'undefined'
       ? PLUS_PAYMENT_METHOD_GPC_HELPER
       : 'gpc-helper'
+  const customPayValue =
+    typeof PLUS_PAYMENT_METHOD_CUSTOM_PAY !== 'undefined'
+      ? PLUS_PAYMENT_METHOD_CUSTOM_PAY
+      : 'custom-pay'
   const defaultMethod =
     typeof DEFAULT_PLUS_PAYMENT_METHOD !== 'undefined'
       ? DEFAULT_PLUS_PAYMENT_METHOD
@@ -10460,11 +10566,13 @@ function updatePlusModeUI() {
     plusPaymentMethodCaption
   ) {
     plusPaymentMethodCaption.textContent =
-      method === gpcValue
-        ? `GPC ${isGpcAutoMode ? '自动' : '手动'}订阅链路`
-        : method === gopayValue
-          ? 'GoPay 印尼订阅链路'
-          : 'PayPal 订阅链路'
+      method === customPayValue
+        ? 'Custom Pay 订阅链路'
+        : method === gpcValue
+          ? `GPC ${isGpcAutoMode ? '自动' : '手动'}订阅链路`
+          : method === gopayValue
+            ? 'GoPay 印尼订阅链路'
+            : 'PayPal 订阅链路'
   }
   if (
     typeof plusPaymentMethodCaption !== 'undefined' &&
@@ -10565,6 +10673,20 @@ function updatePlusModeUI() {
     }
     row.style.display = enabled && selectedMethod === gopayValue ? '' : 'none'
   })
+  ;[
+    typeof rowCustomPayAssistPhone !== 'undefined'
+      ? rowCustomPayAssistPhone
+      : null,
+    typeof rowCustomPayCardNumber !== 'undefined' ? rowCustomPayCardNumber : null,
+    typeof rowCustomPayCardExpiry !== 'undefined' ? rowCustomPayCardExpiry : null,
+    typeof rowCustomPayCardCvv !== 'undefined' ? rowCustomPayCardCvv : null,
+    typeof rowCustomPayOtpUrl !== 'undefined' ? rowCustomPayOtpUrl : null
+  ].forEach((row) => {
+    if (!row) {
+      return
+    }
+    row.style.display = enabled && selectedMethod === customPayValue ? '' : 'none'
+  })
 }
 
 function setSettingsCardLocked(locked) {
@@ -10581,16 +10703,18 @@ function setSettingsCardLocked(locked) {
 
 function setFreePhoneReuseControlsLocked(locked) {
   if (inputFreePhoneReuseEnabled) {
-    inputFreePhoneReuseEnabled.disabled = locked
+    inputFreePhoneReuseEnabled.disabled = locked;
   }
   if (inputFreePhoneReuseAutoEnabled) {
-    inputFreePhoneReuseAutoEnabled.disabled =
-      locked ||
-      !Boolean(inputFreePhoneReuseEnabled?.checked) ||
-      !Boolean(
-        inputPhoneVerificationEnabled?.checked &&
-        phoneVerificationSectionExpanded
-      )
+    inputFreePhoneReuseAutoEnabled.disabled = locked
+    if (!locked) {
+      inputFreePhoneReuseAutoEnabled.disabled =
+        !Boolean(inputFreePhoneReuseEnabled?.checked) ||
+        !Boolean(
+          inputPhoneVerificationEnabled?.checked &&
+          phoneVerificationSectionExpanded
+        )
+    }
   }
 }
 
@@ -11268,7 +11392,7 @@ async function saveSettings(options = {}) {
 async function persistCurrentSettingsForAction() {
   clearTimeout(settingsAutoSaveTimer)
   await waitForSettingsSaveIdle()
-  await persistSignupPhoneInputForAction()
+  await persistSignupPhoneInputForAction();
   await saveSettings({ silent: true, force: true })
 }
 
@@ -11281,7 +11405,7 @@ function applyAutoRunStatus(payload = currentAutoRun) {
   const settingsCardLocked = scheduled || locked
 
   setSettingsCardLocked(settingsCardLocked)
-  setFreePhoneReuseControlsLocked(settingsCardLocked)
+  setFreePhoneReuseControlsLocked(settingsCardLocked);
 
   inputRunCount.disabled =
     currentAutoRun.autoRunning ||
@@ -11714,6 +11838,30 @@ function applySettingsState(state) {
   if (typeof inputGoPayPin !== 'undefined' && inputGoPayPin) {
     inputGoPayPin.value = state?.gopayPin || ''
   }
+  if (
+    typeof inputCustomPayAssistPhone !== 'undefined' &&
+    inputCustomPayAssistPhone
+  ) {
+    inputCustomPayAssistPhone.value = state?.customPayAssistPhone || ''
+  }
+  if (
+    typeof inputCustomPayCardNumber !== 'undefined' &&
+    inputCustomPayCardNumber
+  ) {
+    inputCustomPayCardNumber.value = state?.customPayCardNumber || ''
+  }
+  if (
+    typeof inputCustomPayCardExpiry !== 'undefined' &&
+    inputCustomPayCardExpiry
+  ) {
+    inputCustomPayCardExpiry.value = state?.customPayCardExpiry || ''
+  }
+  if (typeof inputCustomPayCardCvv !== 'undefined' && inputCustomPayCardCvv) {
+    inputCustomPayCardCvv.value = state?.customPayCardCvv || ''
+  }
+  if (typeof inputCustomPayOtpUrl !== 'undefined' && inputCustomPayOtpUrl) {
+    inputCustomPayOtpUrl.value = state?.customPayOtpUrl || ''
+  }
   inputVpsUrl.value = state?.vpsUrl || ''
   inputVpsPassword.value = state?.vpsPassword || ''
   setLocalCpaStep9Mode(state?.localCpaStep9Mode)
@@ -11726,9 +11874,7 @@ function applySettingsState(state) {
     typeof inputSub2ApiAccountPriority !== 'undefined' &&
     inputSub2ApiAccountPriority
   ) {
-    inputSub2ApiAccountPriority.value = String(
-      normalizeSub2ApiAccountPriorityValue(state?.sub2apiAccountPriority)
-    )
+    inputSub2ApiAccountPriority.value = String(normalizeSub2ApiAccountPriorityValue(state?.sub2apiAccountPriority));
   }
   inputSub2ApiDefaultProxy.value = state?.sub2apiDefaultProxyName || ''
   const normalizedIpProxyService = resolveIpProxyService(state?.ipProxyService)
@@ -13671,7 +13817,10 @@ function updateMailProviderUI() {
   if (typeof rowCustomEmailPool !== 'undefined' && rowCustomEmailPool) {
     rowCustomEmailPool.style.display = useCustomEmailPool ? '' : 'none'
     if (useCustomEmailPool) {
-      queueCustomEmailPoolRefresh()
+      syncRunCountFromCustomEmailPool();
+      if (typeof queueCustomEmailPoolRefresh === 'function') {
+        queueCustomEmailPoolRefresh();
+      }
     } else {
       resetCustomEmailPoolManager()
     }
@@ -15255,7 +15404,7 @@ async function handleSkipStep(step) {
     }
   }
 
-  await persistCurrentSettingsForAction()
+  await persistCurrentSettingsForAction();
 
   const response = await chrome.runtime.sendMessage({
     type: 'SKIP_STEP',
@@ -15284,7 +15433,7 @@ stepsList?.addEventListener('click', async (event) => {
     if (!(await maybeTakeoverAutoRun(`执行步骤 ${step}`))) {
       return
     }
-    await persistCurrentSettingsForAction()
+    await persistCurrentSettingsForAction();
     const gpcCreateStep =
       getStepIdByKeyForCurrentMode('plus-checkout-create') || 6
     if (step === gpcCreateStep && !(await ensureGpcApiKeyReadyForStart())) {
@@ -15608,7 +15757,7 @@ async function startAutoRunFromCurrentSettings() {
   }
 
   if (typeof persistCurrentSettingsForAction === 'function') {
-    await persistCurrentSettingsForAction()
+    await persistCurrentSettingsForAction();
   }
   const autoRunStartValidation = (() => {
     const rootScope = typeof window !== 'undefined' ? window : globalThis
@@ -16178,7 +16327,12 @@ selectPlusPaymentMethod?.addEventListener('change', () => {
   selectGoPayCountryCode,
   inputGoPayPhone,
   inputGoPayOtp,
-  inputGoPayPin
+  inputGoPayPin,
+  inputCustomPayAssistPhone,
+  inputCustomPayCardNumber,
+  inputCustomPayCardExpiry,
+  inputCustomPayCardCvv,
+  inputCustomPayOtpUrl
 ].forEach((input) => {
   input?.addEventListener('input', () => {
     markSettingsDirty(true)
@@ -16319,7 +16473,7 @@ selectPanelMode.addEventListener('change', async () => {
   selectPanelMode.value = nextPanelMode
   const confirmed = await confirmCpaPhoneSignupIfNeeded({
     signupMethod: getSelectedSignupMethod(),
-    panelMode: nextPanelMode
+    panelMode: nextPanelMode,
   })
   if (!confirmed) {
     selectPanelMode.value = previousPanelMode
@@ -17284,22 +17438,73 @@ function getPhoneSmsCountrySelectionForProvider(
 async function switchPhoneSmsProvider(nextProvider) {
   const previousProvider = getLastAppliedPhoneSmsProvider()
   const normalizedNextProvider = normalizePhoneSmsProvider(nextProvider)
+  const phoneSmsProviderNexsms =
+    typeof PHONE_SMS_PROVIDER_NEXSMS !== 'undefined'
+      ? PHONE_SMS_PROVIDER_NEXSMS
+      : 'nexsms'
+  const phoneSmsProviderSmsbower =
+    typeof PHONE_SMS_PROVIDER_SMSBOWER !== 'undefined'
+      ? PHONE_SMS_PROVIDER_SMSBOWER
+      : 'smsbower'
+  const inputHeroSmsApiKeyElement =
+    typeof inputHeroSmsApiKey !== 'undefined' ? inputHeroSmsApiKey : null
+  const inputFiveSimApiKeyElement =
+    typeof inputFiveSimApiKey !== 'undefined' ? inputFiveSimApiKey : null
+  const inputNexSmsApiKeyElement =
+    typeof inputNexSmsApiKey !== 'undefined' ? inputNexSmsApiKey : null
+  const inputSmsbowerApiKeyElement =
+    typeof inputSmsbowerApiKey !== 'undefined' ? inputSmsbowerApiKey : null
+  const inputHeroSmsMaxPriceElement =
+    typeof inputHeroSmsMaxPrice !== 'undefined' ? inputHeroSmsMaxPrice : null
+  const inputSmsbowerMaxPriceElement =
+    typeof inputSmsbowerMaxPrice !== 'undefined' ? inputSmsbowerMaxPrice : null
+  const inputNexSmsServiceCodeElement =
+    typeof inputNexSmsServiceCode !== 'undefined' ? inputNexSmsServiceCode : null
+  const inputSmsbowerBaseUrlElement =
+    typeof inputSmsbowerBaseUrl !== 'undefined' ? inputSmsbowerBaseUrl : null
+  const inputSmsbowerCountryOrderElement =
+    typeof inputSmsbowerCountryOrder !== 'undefined'
+      ? inputSmsbowerCountryOrder
+      : null
+  const inputSmsbowerServiceCodeElement =
+    typeof inputSmsbowerServiceCode !== 'undefined'
+      ? inputSmsbowerServiceCode
+      : null
+  const inputFiveSimOperatorElement =
+    typeof inputFiveSimOperator !== 'undefined' ? inputFiveSimOperator : null
+  const getApiKeyInputForProvider = (provider) => {
+    if (provider === PHONE_SMS_PROVIDER_FIVE_SIM) {
+      return inputFiveSimApiKeyElement || inputHeroSmsApiKeyElement
+    }
+    if (provider === phoneSmsProviderNexsms) {
+      return inputNexSmsApiKeyElement || inputHeroSmsApiKeyElement
+    }
+    if (provider === phoneSmsProviderSmsbower) {
+      return inputSmsbowerApiKeyElement || inputHeroSmsApiKeyElement
+    }
+    return inputHeroSmsApiKeyElement
+  }
+  const getApiKeyForProvider = (provider) => {
+    if (provider === PHONE_SMS_PROVIDER_FIVE_SIM) {
+      return latestState?.fiveSimApiKey || ''
+    }
+    if (provider === phoneSmsProviderNexsms) {
+      return latestState?.nexSmsApiKey || ''
+    }
+    if (provider === phoneSmsProviderSmsbower) {
+      return latestState?.smsbowerApiKey || ''
+    }
+    return latestState?.heroSmsApiKey || ''
+  }
 
-  const currentApiKey =
-    previousProvider === PHONE_SMS_PROVIDER_FIVE_SIM
-      ? String(inputFiveSimApiKey?.value || '')
-      : previousProvider === PHONE_SMS_PROVIDER_NEXSMS
-        ? String(inputNexSmsApiKey?.value || '')
-        : previousProvider === PHONE_SMS_PROVIDER_SMSBOWER
-          ? String(inputSmsbowerApiKey?.value || '')
-          : String(inputHeroSmsApiKey?.value || '')
+  const currentApiKey = String(getApiKeyInputForProvider(previousProvider)?.value || '')
   const currentMaxPrice =
-    previousProvider === PHONE_SMS_PROVIDER_SMSBOWER
+    previousProvider === phoneSmsProviderSmsbower
       ? normalizeSmsbowerMaxPriceValue(
-          inputSmsbowerMaxPrice?.value || latestState?.smsbowerMaxPrice || ''
+          inputSmsbowerMaxPriceElement?.value || latestState?.smsbowerMaxPrice || ''
         )
       : normalizePhoneSmsMaxPriceValue(
-          inputHeroSmsMaxPrice?.value || '',
+          inputHeroSmsMaxPriceElement?.value || '',
           previousProvider
         )
   const currentSelection =
@@ -17325,26 +17530,26 @@ async function switchPhoneSmsProvider(nextProvider) {
       .map((country) => normalizeFiveSimCountryId(country?.id, ''))
       .filter(Boolean)
     patch.fiveSimOperator = normalizeFiveSimOperator(
-      inputFiveSimOperator?.value || latestState?.fiveSimOperator
+      inputFiveSimOperatorElement?.value || latestState?.fiveSimOperator
     )
-  } else if (previousProvider === PHONE_SMS_PROVIDER_NEXSMS) {
+  } else if (previousProvider === phoneSmsProviderNexsms) {
     patch.nexSmsApiKey = currentApiKey
     patch.nexSmsCountryOrder = Array.isArray(latestState?.nexSmsCountryOrder)
       ? latestState.nexSmsCountryOrder
       : []
     patch.nexSmsServiceCode = normalizeNexSmsServiceCodeValue(
-      inputNexSmsServiceCode?.value || latestState?.nexSmsServiceCode
+      inputNexSmsServiceCodeElement?.value || latestState?.nexSmsServiceCode
     )
-  } else if (previousProvider === PHONE_SMS_PROVIDER_SMSBOWER) {
+  } else if (previousProvider === phoneSmsProviderSmsbower) {
     patch.smsbowerApiKey = currentApiKey
     patch.smsbowerBaseUrl = normalizeSmsbowerBaseUrlValue(
-      inputSmsbowerBaseUrl?.value || latestState?.smsbowerBaseUrl
+      inputSmsbowerBaseUrlElement?.value || latestState?.smsbowerBaseUrl
     )
     patch.smsbowerCountryOrder = normalizeSmsbowerCountryOrderValue(
-      inputSmsbowerCountryOrder?.value || latestState?.smsbowerCountryOrder
+      inputSmsbowerCountryOrderElement?.value || latestState?.smsbowerCountryOrder
     )
     patch.smsbowerServiceCode = normalizeSmsbowerServiceCodeValue(
-      inputSmsbowerServiceCode?.value || latestState?.smsbowerServiceCode
+      inputSmsbowerServiceCodeElement?.value || latestState?.smsbowerServiceCode
     )
     patch.smsbowerMaxPrice = currentMaxPrice
   } else {
@@ -17358,49 +17563,53 @@ async function switchPhoneSmsProvider(nextProvider) {
   syncLatestState(patch)
   setPhoneSmsProviderSelectValue(normalizedNextProvider)
   heroSmsCountrySelectionOrder = []
-  if (inputHeroSmsApiKey) {
-    inputHeroSmsApiKey.value = String(latestState?.heroSmsApiKey || '')
+  const activeApiKeyInput = getApiKeyInputForProvider(normalizedNextProvider)
+  if (activeApiKeyInput) {
+    activeApiKeyInput.value = String(getApiKeyForProvider(normalizedNextProvider))
   }
-  if (inputHeroSmsMaxPrice) {
-    inputHeroSmsMaxPrice.value = normalizeHeroSmsMaxPriceValue(
+  if (inputHeroSmsApiKeyElement && inputHeroSmsApiKeyElement !== activeApiKeyInput) {
+    inputHeroSmsApiKeyElement.value = String(latestState?.heroSmsApiKey || '')
+  }
+  if (inputHeroSmsMaxPriceElement) {
+    inputHeroSmsMaxPriceElement.value = normalizeHeroSmsMaxPriceValue(
       latestState?.heroSmsMaxPrice || ''
     )
   }
-  if (inputFiveSimApiKey) {
-    inputFiveSimApiKey.value = String(latestState?.fiveSimApiKey || '')
+  if (inputFiveSimApiKeyElement && inputFiveSimApiKeyElement !== activeApiKeyInput) {
+    inputFiveSimApiKeyElement.value = String(latestState?.fiveSimApiKey || '')
   }
-  if (inputNexSmsApiKey) {
-    inputNexSmsApiKey.value = String(latestState?.nexSmsApiKey || '')
+  if (inputNexSmsApiKeyElement && inputNexSmsApiKeyElement !== activeApiKeyInput) {
+    inputNexSmsApiKeyElement.value = String(latestState?.nexSmsApiKey || '')
   }
-  if (inputNexSmsServiceCode) {
-    inputNexSmsServiceCode.value = normalizeNexSmsServiceCodeValue(
+  if (inputNexSmsServiceCodeElement) {
+    inputNexSmsServiceCodeElement.value = normalizeNexSmsServiceCodeValue(
       latestState?.nexSmsServiceCode || DEFAULT_NEX_SMS_SERVICE_CODE
     )
   }
-  if (inputSmsbowerApiKey) {
-    inputSmsbowerApiKey.value = String(latestState?.smsbowerApiKey || '')
+  if (inputSmsbowerApiKeyElement && inputSmsbowerApiKeyElement !== activeApiKeyInput) {
+    inputSmsbowerApiKeyElement.value = String(latestState?.smsbowerApiKey || '')
   }
-  if (inputSmsbowerBaseUrl) {
-    inputSmsbowerBaseUrl.value = normalizeSmsbowerBaseUrlValue(
+  if (inputSmsbowerBaseUrlElement) {
+    inputSmsbowerBaseUrlElement.value = normalizeSmsbowerBaseUrlValue(
       latestState?.smsbowerBaseUrl || DEFAULT_SMSBOWER_BASE_URL
     )
   }
-  if (inputSmsbowerCountryOrder) {
-    inputSmsbowerCountryOrder.value = formatSmsbowerCountryOrderValue(
+  if (inputSmsbowerCountryOrderElement) {
+    inputSmsbowerCountryOrderElement.value = formatSmsbowerCountryOrderValue(
       latestState?.smsbowerCountryOrder || DEFAULT_SMSBOWER_COUNTRY_ORDER
     )
   }
-  if (inputSmsbowerServiceCode) {
-    inputSmsbowerServiceCode.value = normalizeSmsbowerServiceCodeValue(
+  if (inputSmsbowerServiceCodeElement) {
+    inputSmsbowerServiceCodeElement.value = normalizeSmsbowerServiceCodeValue(
       latestState?.smsbowerServiceCode || DEFAULT_SMSBOWER_SERVICE_CODE
     )
   }
-  if (inputSmsbowerMaxPrice) {
-    inputSmsbowerMaxPrice.value = normalizeSmsbowerMaxPriceValue(
+  if (inputSmsbowerMaxPriceElement) {
+    inputSmsbowerMaxPriceElement.value = normalizeSmsbowerMaxPriceValue(
       latestState?.smsbowerMaxPrice || ''
     )
   }
-  if (inputFiveSimOperator) {
+  if (inputFiveSimOperatorElement) {
     inputFiveSimOperator.value = normalizeFiveSimOperator(
       latestState?.fiveSimOperator
     )
@@ -17462,7 +17671,7 @@ signupMethodButtons.forEach((button) => {
     const nextSignupMethod = normalizeSignupMethod(button.dataset.signupMethod)
     const confirmed = await confirmCpaPhoneSignupIfNeeded({
       signupMethod: nextSignupMethod,
-      panelMode: getSelectedPanelMode()
+      panelMode: getSelectedPanelMode(),
     })
     if (!confirmed) {
       updateSignupMethodUI()
@@ -17731,11 +17940,10 @@ btnSaveFreeReusablePhone?.addEventListener('click', async () => {
   if (!phoneNumber) {
     showToast?.('请先填写白嫖复用手机号。', 'warn', 2200)
     inputFreeReusablePhone?.focus?.()
-    return
+    return;
   }
   try {
-    const response = await chrome.runtime.sendMessage({
-      type: 'SET_FREE_REUSABLE_PHONE',
+    const response = await chrome.runtime.sendMessage({ type: 'SET_FREE_REUSABLE_PHONE',
       payload: { phoneNumber }
     })
     if (response?.error) {
@@ -17784,9 +17992,7 @@ selectHeroSmsPreferredActivation?.addEventListener('change', () => {
   markSettingsDirty(true)
   saveSettings({ silent: true }).catch(() => {})
 })
-inputHeroSmsMaxPrice?.addEventListener('input', () => {
-  markSettingsDirty(true)
-})
+inputHeroSmsMaxPrice?.addEventListener('input', () => { markSettingsDirty(true); });
 inputHeroSmsMaxPrice?.addEventListener('blur', () => {
   inputHeroSmsMaxPrice.value = normalizePhoneSmsMaxPriceValue(
     inputHeroSmsMaxPrice.value,
@@ -18976,7 +19182,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         inputFreePhoneReuseEnabled.checked = Boolean(
           message.payload.freePhoneReuseEnabled
         )
-        updatePhoneVerificationSettingsUI()
+        updatePhoneVerificationSettingsUI();
       }
       if (
         message.payload.freePhoneReuseAutoEnabled !== undefined &&
@@ -18985,7 +19191,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         inputFreePhoneReuseAutoEnabled.checked = Boolean(
           message.payload.freePhoneReuseAutoEnabled
         )
-        updatePhoneVerificationSettingsUI()
+        updatePhoneVerificationSettingsUI();
       }
       if (
         message.payload.heroSmsAcquirePriority !== undefined &&
@@ -19106,7 +19312,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
           )
         }
         updatePhoneSmsProviderOrderSummary(nextOrder)
-        updatePhoneVerificationSettingsUI()
+        updatePhoneVerificationSettingsUI();
       }
       if (
         message.payload.phoneVerificationEnabled !== undefined &&
@@ -19123,7 +19329,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         message.payload.phoneVerificationEnabled !== undefined ||
         message.payload.signupMethod !== undefined
       ) {
-        updatePhoneVerificationSettingsUI()
+        updatePhoneVerificationSettingsUI();
       }
       const activePhoneSmsProvider = normalizePhoneSmsProviderValue(
         message.payload.phoneSmsProvider !== undefined

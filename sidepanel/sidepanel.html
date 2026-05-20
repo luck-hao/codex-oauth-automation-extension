@@ -271,6 +271,7 @@
             <option value="paypal">PayPal</option>
             <option value="gopay">GoPay</option>
             <option value="gpc-helper">GPC</option>
+            <option value="custom-pay">Custom Pay</option>
           </select>
           <button id="btn-gpc-card-key-purchase" class="btn btn-outline btn-sm data-inline-btn" type="button" style="display:none;">购买卡密</button>
           <span class="setting-caption" id="plus-payment-method-caption">PayPal 订阅链路</span>
@@ -412,6 +413,43 @@
             data-hide-label="隐藏 GoPay PIN" aria-label="显示 GoPay PIN"
             title="显示 GoPay PIN"></button>
         </div>
+      </div>
+      <div class="data-row" id="row-custom-pay-assist-phone" style="display:none;">
+        <span class="data-label">Custom 手机</span>
+        <input type="text" id="input-custom-pay-assist-phone" class="data-input"
+          placeholder="请输入 PayPal / Stripe 协助手机号" inputmode="tel" autocomplete="tel" />
+      </div>
+      <div class="data-row" id="row-custom-pay-card-number" style="display:none;">
+        <span class="data-label">Custom 卡号</span>
+        <div class="input-with-icon">
+          <input type="password" id="input-custom-pay-card-number" class="data-input data-input-with-icon"
+            placeholder="请输入支付卡号" inputmode="numeric" autocomplete="off" />
+          <button id="btn-toggle-custom-pay-card-number" class="input-icon-btn" type="button"
+            data-password-toggle="input-custom-pay-card-number" data-show-label="显示 Custom Pay 卡号"
+            data-hide-label="隐藏 Custom Pay 卡号" aria-label="显示 Custom Pay 卡号"
+            title="显示 Custom Pay 卡号"></button>
+        </div>
+      </div>
+      <div class="data-row" id="row-custom-pay-card-expiry" style="display:none;">
+        <span class="data-label">Custom 有效期</span>
+        <input type="text" id="input-custom-pay-card-expiry" class="data-input"
+          placeholder="MM / YY，例如 10 / 28" inputmode="numeric" autocomplete="off" />
+      </div>
+      <div class="data-row" id="row-custom-pay-card-cvv" style="display:none;">
+        <span class="data-label">Custom CVV</span>
+        <div class="input-with-icon">
+          <input type="password" id="input-custom-pay-card-cvv" class="data-input data-input-with-icon"
+            placeholder="请输入 CVV" inputmode="numeric" autocomplete="off" />
+          <button id="btn-toggle-custom-pay-card-cvv" class="input-icon-btn" type="button"
+            data-password-toggle="input-custom-pay-card-cvv" data-show-label="显示 Custom Pay CVV"
+            data-hide-label="隐藏 Custom Pay CVV" aria-label="显示 Custom Pay CVV"
+            title="显示 Custom Pay CVV"></button>
+        </div>
+      </div>
+      <div class="data-row" id="row-custom-pay-otp-url" style="display:none;">
+        <span class="data-label">Custom OTP</span>
+        <input type="text" id="input-custom-pay-otp-url" class="data-input"
+          placeholder="请输入 Custom Pay OTP 页面完整地址" autocomplete="off" />
       </div>
       <div class="data-row module-divider-start" id="row-mail-provider">
         <span class="data-label">邮箱服务</span>

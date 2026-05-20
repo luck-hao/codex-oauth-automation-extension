@@ -72,7 +72,7 @@
     const DEFAULT_PHONE_REQUEST_TIMEOUT_MS = 20000;
     const DEFAULT_PHONE_SUBMIT_ATTEMPTS = 3;
     const DEFAULT_PHONE_NUMBER_MAX_USES = 3;
-    const DEFAULT_PHONE_NUMBER_REPLACEMENT_LIMIT = 20;
+    const DEFAULT_PHONE_NUMBER_REPLACEMENT_LIMIT = 3;
     const DEFAULT_PHONE_PRICE_LOOKUP_ATTEMPTS = 3;
     const MAX_PHONE_PRICE_CANDIDATES = 8;
     const DEFAULT_PHONE_ACTIVATION_RETRY_ROUNDS = 3;
@@ -653,12 +653,6 @@
 
       const maxProviders = DEFAULT_PHONE_SMS_PROVIDER_ORDER.length;
       if (normalized.length) {
-        DEFAULT_PHONE_SMS_PROVIDER_ORDER.forEach((provider) => {
-          if (!seen.has(provider)) {
-            seen.add(provider);
-            normalized.push(provider);
-          }
-        });
         return normalized.slice(0, maxProviders);
       }
 
@@ -2171,7 +2165,7 @@
       if (!text) {
         return false;
       }
-      return /no\s+numbers\s+available\s+across|no\s+free\s+phones|numbers?\s+not\s+found|no\s+numbers\s+within\s+maxprice|step\s*9:\s*(?:5sim|nexsms|smsbower(?:\.app)?)\s+countries\s+are\s+empty|\bNO_NUMBERS\b/i.test(text);
+      return /no\s+numbers\s+available\s+across|no\s+free\s+phones|numbers?\s+not\s+found|no\s+numbers\s+within\s+maxprice|均无可用号码|暂无可用号码|无可用号码|step\s*9:\s*(?:5sim|nexsms|smsbower(?:\.app)?)\s+countries\s+are\s+empty|\bNO_NUMBERS\b/i.test(text);
     }
 
     function resolveNoSupplyDiagnosticsContext(state = {}, providerOrder = []) {
@@ -2269,7 +2263,8 @@
       const suggestion = formatNoSupplySuggestion(context);
       await addLog(
         `Step 9 diagnostics: 无号连续失败 ${nextStreak} 次；maxPrice=${maxPriceText}；providerOrder=${providerOrderText}；国家数 HeroSMS=${context.heroCountryCount}, 5sim=${context.fiveSimCountryCount}, NexSMS=${context.nexSmsCountryCount}, smsbower.app=${context.smsbowerCountryCount}。建议：${suggestion}。`,
-        nextStreak >= 2 ? 'warn' : 'info'
+        nextStreak >= 2 ? 'warn' : 'info',
+        { step: 9, stepKey: 'phone-verification' }
       );
       return true;
     }

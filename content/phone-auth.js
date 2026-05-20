@@ -551,10 +551,6 @@
         return true;
       }
 
-      if (await trySelectCountryListboxOption(countryLabel, phoneNumber, targetDialCode) && isTargetDisplayed()) {
-        return true;
-      }
-
       const select = getCountrySelect();
       if (select) {
         if (await trySelectCountryOption(select, byLabel) && (!targetDialCode || isTargetDisplayed())) {
@@ -947,10 +943,17 @@
     async function submitPhoneNumber(payload = {}) {
       await waitForAddPhoneReady();
 
-      const phoneNumber = toE164PhoneNumber(payload.phoneNumber, '');
-      if (!phoneNumber) {
+      const initialPhoneNumber = toE164PhoneNumber(payload.phoneNumber, '');
+      if (!initialPhoneNumber) {
         throw new Error('Missing phone number for add-phone submission.');
       }
+
+      await ensureCountrySelected(payload.countryLabel, initialPhoneNumber);
+      const selectedDialCode = getDisplayedDialCode()
+        || extractDialCodeFromText(getOptionLabel(getSelectedCountryOption()))
+        || resolveTargetDialCode(payload.countryLabel, initialPhoneNumber, getSelectedCountryOption());
+      const phoneNumber = toE164PhoneNumber(payload.phoneNumber, selectedDialCode);
+      const nationalPhoneNumber = toNationalPhoneNumber(phoneNumber, selectedDialCode);
 
       const phoneInput = getPhoneInput() || await waitForElement(
         'input[type="tel"], input[name="__reservedForPhoneNumberInput_tel"], input[autocomplete="tel"]',
@@ -968,7 +971,7 @@
 
       await humanPause(250, 700);
       await performOperationWithDelay({ stepKey: 'phone-auth', kind: 'fill', label: 'phone-number' }, async () => {
-        fillInput(phoneInput, phoneNumber);
+        fillInput(phoneInput, nationalPhoneNumber || phoneNumber);
       });
       if (hiddenPhoneNumberInput) {
         await performOperationWithDelay({ stepKey: 'phone-auth', kind: 'hidden-sync', label: 'phone-number-hidden-sync' }, async () => {

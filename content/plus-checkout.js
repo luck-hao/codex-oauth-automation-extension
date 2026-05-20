@@ -17,8 +17,8 @@ const PLUS_CHECKOUT_PAYLOAD_BASE = {
 const PLUS_CHECKOUT_CONFIGS = {
   paypal: {
     billing_details: {
-      country: 'DE',
-      currency: 'EUR',
+      country: 'US',
+      currency: 'USD',
     },
     checkoutUrlPrefix: 'https://chatgpt.com/checkout/openai_ie/',
     paymentLabel: 'PayPal',
@@ -42,8 +42,8 @@ const PAYMENT_METHOD_CONFIGS = {
     diagnosticLabel: 'PayPal',
     checkoutMerchantPath: 'openai_ie',
     billingDetails: {
-      country: 'DE',
-      currency: 'EUR',
+      country: 'US',
+      currency: 'USD',
     },
     patterns: [/paypal/i],
   },
@@ -977,10 +977,8 @@ function getRegionCandidates(value) {
   return Array.from(new Set(candidates.filter(Boolean)));
 }
 
-function getCountryCandidates(value = '') {
-  const raw = normalizeText(value);
-  const compact = raw.toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g, '');
-  const aliases = {
+function getCountryAliases() {
+  return {
     AR: ['Argentina', '阿根廷'],
     AU: ['Australia', '澳大利亚'],
     CA: ['Canada', '加拿大'],
@@ -1005,6 +1003,16 @@ function getCountryCandidates(value = '') {
     US: ['United States', 'United States of America', 'USA', '美国'],
     VN: ['Vietnam', '越南'],
   };
+}
+
+function compactCountryText(value = '') {
+  return normalizeText(value).toLowerCase().replace(/[^a-z0-9一-鿿]/g, '');
+}
+
+function getCountryCandidates(value = '') {
+  const raw = normalizeText(value);
+  const compact = compactCountryText(raw);
+  const aliases = getCountryAliases();
   const indonesiaCandidates = aliases.ID || [];
   if (compact === 'id' || compact === 'indonesia' || compact === '印度尼西亚' || compact === '印尼') {
     return Array.from(new Set([raw, 'ID', ...indonesiaCandidates].filter(Boolean)));
@@ -1014,7 +1022,7 @@ function getCountryCandidates(value = '') {
     if (String(code).toLowerCase() === compact) return true;
     return names.some((name) => {
       const normalizedName = normalizeText(name).toLowerCase();
-      const compactName = normalizedName.replace(/[^a-z0-9\u4e00-\u9fff]/g, '');
+      const compactName = compactCountryText(normalizedName);
       return compact === compactName || normalizedName === raw.toLowerCase();
     });
   });
@@ -1023,11 +1031,11 @@ function getCountryCandidates(value = '') {
 
 function matchesCountryOption(text, desiredValue) {
   const normalizedText = normalizeText(text).toLowerCase();
-  const compactText = normalizedText.replace(/[^a-z0-9\u4e00-\u9fff]/g, '');
+  const compactText = compactCountryText(normalizedText);
   if (!compactText) return false;
   return getCountryCandidates(desiredValue).some((candidate) => {
     const normalizedCandidate = normalizeText(candidate).toLowerCase();
-    const compactCandidate = normalizedCandidate.replace(/[^a-z0-9\u4e00-\u9fff]/g, '');
+    const compactCandidate = compactCountryText(normalizedCandidate);
     if (!compactCandidate) return false;
     return normalizedText === normalizedCandidate
       || compactText === compactCandidate
@@ -1035,12 +1043,27 @@ function matchesCountryOption(text, desiredValue) {
   });
 }
 
+function isKnownCountryValue(text = '') {
+  const normalized = normalizeText(text);
+  const compact = compactCountryText(normalized);
+  if (!compact) return false;
+  return Object.entries(getCountryAliases()).some(([code, names]) => (
+    compact === String(code).toLowerCase()
+    || names.some((name) => {
+      const normalizedName = normalizeText(name).toLowerCase();
+      const compactName = compactCountryText(normalizedName);
+      return compact === compactName || normalized.toLowerCase() === normalizedName;
+    })
+  ));
+}
+
 function findCountryDropdown() {
   const controls = getVisibleControls('select, button, [role="button"], [role="combobox"], [aria-haspopup="listbox"]');
   return controls.find((control) => {
     if (!isEnabledControl(control) || isDocumentLevelContainer(control)) return false;
     const text = getFieldText(control);
-    return /country/i.test(text) || /\u56fd\u5bb6|\u56fd\u5bb6\u6216\u5730\u533a/.test(text);
+    if (/country/i.test(text) || /\u56fd\u5bb6|\u56fd\u5bb6\u6216\u5730\u533a/.test(text)) return true;
+    return isKnownCountryValue(getCountryDropdownValue(control));
   }) || null;
 }
 

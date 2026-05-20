@@ -59,6 +59,7 @@ function createElement({
   text = '',
   value = '',
   placeholder = '',
+  href = '',
   attrs = {},
   style = {},
   rect = { width: 160, height: 40 },
@@ -70,11 +71,13 @@ function createElement({
     type,
     id,
     name,
+    href,
     textContent: text,
     value,
     placeholder,
     disabled: false,
     hidden: Boolean(attrs.hidden),
+    attrs,
     style: {
       display: 'block',
       visibility: 'visible',
@@ -88,6 +91,7 @@ function createElement({
       if (key === 'name') return name;
       if (key === 'placeholder') return placeholder;
       if (key === 'value') return value;
+      if (key === 'href') return href;
       return Object.prototype.hasOwnProperty.call(attrs, key) ? attrs[key] : null;
     },
     getBoundingClientRect() {
@@ -96,8 +100,9 @@ function createElement({
   };
 }
 
-function loadApi(elements) {
+function loadApi(elements, locationOverrides = {}) {
   const document = {
+    body: { innerText: '' },
     documentElement: {},
     querySelectorAll(selector) {
       if (selector === 'input') {
@@ -109,11 +114,23 @@ function loadApi(elements) {
       if (selector === 'input[type="password"]') {
         return elements.filter((el) => el.tag === 'input' && el.type === 'password');
       }
+      if (selector === 'a, [role="link"], [href]') {
+        return elements.filter((el) => el.tag === 'a' || el.attrs?.role === 'link' || el.href);
+      }
+      if (selector === '[data-atomic-wait-viewname="profile"]') {
+        return elements.filter((el) => el.attrs?.['data-atomic-wait-viewname'] === 'profile');
+      }
       if (selector.includes('button') || selector.includes('[role="button"]')) {
         return elements.filter((el) => el.tag === 'button' || el.attrs?.role === 'button');
       }
       return [];
     },
+  };
+  const location = {
+    href: 'https://www.paypal.com/signin',
+    pathname: '/signin',
+    search: '',
+    ...locationOverrides,
   };
   const window = {
     getComputedStyle(el) {
@@ -121,7 +138,7 @@ function loadApi(elements) {
     },
   };
 
-  return new Function('document', 'window', `
+  return new Function('document', 'window', 'location', `
 ${extractFunction('isVisibleElement')}
 ${extractFunction('normalizeText')}
 ${extractFunction('getActionText')}
@@ -134,15 +151,28 @@ ${extractFunction('findPasswordInput')}
 ${extractFunction('findLoginNextButton')}
 ${extractFunction('findEmailNextButton')}
 ${extractFunction('findPasswordLoginButton')}
+${extractFunction('findApproveButton')}
+${extractFunction('getPayPalHref')}
+${extractFunction('findPayPalProfileLink')}
+${extractFunction('isPayPalProfilePage')}
+${extractFunction('findPayPalLogoutButton')}
+${extractFunction('findPasskeyPromptButtons')}
+${extractFunction('hasPasskeyPrompt')}
 ${extractFunction('getPayPalLoginPhase')}
+${extractFunction('inspectPayPalState')}
 return {
   findEmailInput,
   findPasswordInput,
   findEmailNextButton,
   findPasswordLoginButton,
+  getPayPalHref,
+  findPayPalProfileLink,
+  isPayPalProfilePage,
+  findPayPalLogoutButton,
   getPayPalLoginPhase,
+  inspectPayPalState,
 };
-`)(document, window);
+`)(document, window, location);
 }
 
 function createSubmitApi(overrides = {}) {
@@ -308,3 +338,53 @@ test('PayPal email submit refills a prefilled email before clicking next', async
     awaiting: 'password_page',
   });
 });
+
+test('PayPal logged-in restriction page exposes profile link state', () => {
+  const profileLink = createElement({
+    tag: 'a',
+    text: 'Profile',
+    href: '/pay/profile?ssrt=1779185692246&token=BA-demo&ul=1&errorCode=demo',
+  });
+
+  const api = loadApi([profileLink], {
+    href: 'https://www.paypal.com/checkoutnow/error?token=BA-demo',
+    pathname: '/checkoutnow/error',
+    search: '?token=BA-demo',
+  });
+  const state = api.inspectPayPalState();
+
+  assert.equal(api.findPayPalProfileLink(), profileLink);
+  assert.equal(state.profileReady, true);
+  assert.equal(state.profileLinkHref, '/pay/profile?ssrt=1779185692246&token=BA-demo&ul=1&errorCode=demo');
+  assert.equal(state.isProfilePage, false);
+  assert.equal(state.logoutReady, false);
+  assert.equal(state.needsLogin, false);
+});
+
+test('PayPal profile page exposes logout button state', () => {
+  const logoutButton = createElement({
+    tag: 'button',
+    text: '退出登录',
+    attrs: {
+      'data-atomic-wait-domain': 'xo',
+      'data-atomic-wait-intent': 'Logout',
+      'data-atomic-wait-task': 'select_logout',
+      'data-atomic-wait-viewname': 'profile',
+    },
+  });
+
+  const api = loadApi([logoutButton], {
+    href: 'https://www.paypal.com/pay/profile?token=BA-demo',
+    pathname: '/pay/profile',
+    search: '?token=BA-demo',
+  });
+  const state = api.inspectPayPalState();
+
+  assert.equal(api.isPayPalProfilePage(), true);
+  assert.equal(api.findPayPalLogoutButton(), logoutButton);
+  assert.equal(state.profileReady, false);
+  assert.equal(state.isProfilePage, true);
+  assert.equal(state.logoutReady, true);
+  assert.equal(state.logoutButtonText, '退出登录');
+});
+

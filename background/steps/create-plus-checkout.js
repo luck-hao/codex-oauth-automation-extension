@@ -507,19 +507,22 @@
         logMessage: '步骤 6：正在等待订阅页面完成加载...',
       });
 
+      const fallbackCountry = paymentMethod === PLUS_PAYMENT_METHOD_GOPAY ? 'ID' : 'US';
+      const fallbackCurrency = paymentMethod === PLUS_PAYMENT_METHOD_GOPAY ? 'IDR' : 'USD';
+
       await setState({
         plusCheckoutTabId: tabId,
         plusCheckoutUrl: result.checkoutUrl,
-        plusCheckoutCountry: result.country || 'DE',
-        plusCheckoutCurrency: result.currency || 'EUR',
+        plusCheckoutCountry: result.country || fallbackCountry,
+        plusCheckoutCurrency: result.currency || fallbackCurrency,
         plusCheckoutSource: '',
       });
 
-      await addLog(`步骤 6：Plus Checkout 页面已就绪（${paymentMethodLabel} / ${result.country || 'DE'} ${result.currency || 'EUR'}），准备继续下一步。`, 'info');
+      await addLog(`步骤 6：Plus Checkout 页面已就绪（${paymentMethodLabel} / ${result.country || fallbackCountry} ${result.currency || fallbackCurrency}），准备继续下一步。`, 'info');
 
       await completeStepFromBackground(6, {
-        plusCheckoutCountry: result.country || 'DE',
-        plusCheckoutCurrency: result.currency || 'EUR',
+        plusCheckoutCountry: result.country || fallbackCountry,
+        plusCheckoutCurrency: result.currency || fallbackCurrency,
       });
     }
 
